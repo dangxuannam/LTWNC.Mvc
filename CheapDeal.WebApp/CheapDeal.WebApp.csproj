@@ -303,6 +303,10 @@
     <Compile Include="Migrations\202602050701213_AddPaymentDetails.Designer.cs">
       <DependentUpon>202602050701213_AddPaymentDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202602100237004_UpdateGit.cs" />
+    <Compile Include="Migrations\202602100237004_UpdateGit.Designer.cs">
+      <DependentUpon>202602100237004_UpdateGit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Account.cs" />
@@ -1404,6 +1408,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202602050701213_AddPaymentDetails.resx">
       <DependentUpon>202602050701213_AddPaymentDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202602100237004_UpdateGit.resx">
+      <DependentUpon>202602100237004_UpdateGit.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
