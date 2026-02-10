@@ -1,0 +1,148 @@
+﻿@{
+    ViewBag.Title = "Bảng điều khiển quản trị";
+}
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox-title" style="border-bottom: 2px solid #19aa8d; margin-bottom: 20px;">
+                <h3><i class="fa fa-bolt text-navy"></i> Truy cập nhanh hệ thống</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="widget style1 navy-bg shortcut-card" onclick="location.href='@Url.Action("Index", "Product")'">
+                <div class="row">
+                    <div class="col-4"><i class="fa fa-gift fa-5x"></i></div>
+                    <div class="col-8 text-right">
+                        <span> Sản phẩm </span>
+                        <h2 class="font-bold">Quản lý</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="widget style1 yellow-bg shortcut-card" onclick="location.href='@Url.Action("Index", "Order")'">
+                <div class="row">
+                    <div class="col-4"><i class="fa fa-shopping-cart fa-5x"></i></div>
+                    <div class="col-8 text-right">
+                        <span> Đơn hàng </span>
+                        <h2 class="font-bold">Xử lý ngay</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="widget style1 lazur-bg shortcut-card" onclick="location.href='@Url.Action("Index", "Category")'">
+                <div class="row">
+                    <div class="col-4"><i class="fa fa-sitemap fa-5x"></i></div>
+                    <div class="col-8 text-right">
+                        <span> Sản phẩm </span>
+                        <h2 class="font-bold">Phân loại</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="widget style1 red-bg shortcut-card" onclick="location.href='@Url.Action("Library", "Picture")'">
+                <div class="row">
+                    <div class="col-4"><i class="fa fa-image fa-5x"></i></div>
+                    <div class="col-8 text-right">
+                        <span> Thư viện ảnh </span>
+                        <h2 class="font-bold">Media</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-lg-4 col-md-6">
+            <div class="ibox shortcut-box" onclick="location.href='@Url.Action("TrackOrders", "Shipper")'">
+                <div class="ibox-content text-center">
+                    <i class="fa fa-truck fa-4x text-success"></i>
+                    <h3 class="m-b-none mt-2">Theo dõi vận chuyển</h3>
+                    <p class="text-muted">Kiểm tra trạng thái đơn hàng</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="ibox shortcut-box" onclick="location.href='@Url.Action("Index", "Supplier")'">
+                <div class="ibox-content text-center">
+                    <i class="fa fa-university fa-4x text-info"></i>
+                    <h3 class="m-b-none mt-2">Nhà cung cấp</h3>
+                    <p class="text-muted">Quản lý đối tác nhập hàng</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+            <div class="ibox shortcut-box" onclick="location.href='@Url.Action("Pending", "Comment")'">
+                <div class="ibox-content text-center">
+                    <i class="fa fa-comments fa-4x text-warning"></i>
+                    <h3 class="m-b-none mt-2">Duyệt bình luận</h3>
+                    <p class="text-muted">Tương tác với khách hàng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-lg-6">
+            <div class="ibox" onclick="location.href='@Url.Action("Index", "User")'" style="cursor:pointer">
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-4"><i class="fa fa-users fa-3x text-navy"></i></div>
+                        <div class="col-sm-8 text-right">
+                            <h3>Quản lý Người dùng</h3>
+                            <small>Phân quyền & Nhật ký hoạt động</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .shortcut-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 8px;
+    }
+
+        .shortcut-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            filter: brightness(1.1);
+        }
+
+    .shortcut-box {
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #e7eaec;
+    }
+
+        .shortcut-box:hover {
+            background-color: #f8f9fa;
+            border-color: #19aa8d;
+        }
+
+        .shortcut-box i {
+            transition: transform 0.3s;
+        }
+
+        .shortcut-box:hover i {
+            transform: scale(1.2);
+        }
+
+    .mt-3 {
+        margin-top: 20px;
+    }
+</style>

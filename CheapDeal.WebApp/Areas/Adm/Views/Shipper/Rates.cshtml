@@ -1,0 +1,290 @@
+﻿@using System.Linq
+@using System.Collections.Generic
+
+@model IEnumerable<CheapDeal.WebApp.Models.ShippingRate>
+@{
+    ViewBag.Title = "Quản lý Bảng giá vận chuyển";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Bảng giá vận chuyển</h2>
+        <ol class="breadcrumb">
+            <li><a href="/Adm/Dashboard">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index")">Nhà vận chuyển</a></li>
+            <li class="active"><strong>Bảng giá</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissable">
+            <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Danh sách mức phí</h5>
+                    <div class="ibox-tools">
+                        <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalAddRate">
+                            <i class="fa fa-plus"></i> Thêm giá mới
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ibox-content">
+                    <div class="row m-b-sm m-t-sm">
+                        <div class="col-md-6">
+                            <form method="get" action="@Url.Action("Rates")" class="form-inline">
+                                <label class="control-label" style="margin-right:10px">Lọc theo công ty:</label>
+                                @Html.DropDownList("shipperId", (SelectList)ViewBag.Shippers, "--- Tất cả công ty ---", new { @class = "form-control input-sm", onchange = "this.form.submit()" })
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Công ty vận chuyển</th>
+                                    <th>Khu vực / Tỉnh thành</th>
+                                    <th class="text-center">Trọng lượng (kg)</th>
+                                    <th class="text-right">Phí ship (VNĐ)</th>
+                                    <th width="100px" class="text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr id="row_rate_@item.Id">
+                                            <td>
+                                                <i class="fa fa-truck"></i>
+                                                <strong>@item.Shipper.CompanyName</strong>
+                                            </td>
+                                            <td>
+                                                @(string.IsNullOrEmpty(item.ProvinceName) ? "Toàn quốc" : item.ProvinceName)
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="label label-info">@item.MinWeight kg</span>
+                                                <i class="fa fa-arrow-right"></i>
+                                                <span class="label label-info">@item.MaxWeight kg</span>
+                                            </td>
+                                            <td class="text-right text-navy font-bold">
+                                                @string.Format("{0:N0}", item.Price) ₫
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger btn-xs btn-delete-rate" data-id="@item.Id">
+                                                    <i class="fa fa-trash"></i> Xóa
+                                                </button>
+                                                <button class="btn btn-warning btn-xs btn-edit-rate" data-id="@item.Id">
+                                                    <i class="fa fa-pencil"></i> Sửa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted" style="padding: 20px;">
+                                            Chưa có dữ liệu bảng giá nào. Hãy thêm mới!
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddRate" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("AddRate", "Shipper", new { area = "Adm" }, FormMethod.Post, new { id = "formAddRate", @class = "form-horizontal" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Thêm mới Giá ship</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Công ty (*)</label>
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ShipperId", (SelectList)ViewBag.Shippers, "--- Chọn công ty ---", new { @class = "form-control", required = "required" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Khu vực</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="ProvinceName" class="form-control" placeholder="Để trống nếu áp dụng Toàn quốc" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Trọng lượng (kg)</label>
+                        <div class="col-sm-4"><input type="number" step="0.1" name="MinWeight" class="form-control" placeholder="Từ" required /></div>
+                        <div class="col-sm-1" style="text-align:center; padding: 7px">-</div>
+                        <div class="col-sm-4"><input type="number" step="0.1" name="MaxWeight" class="form-control" placeholder="Đến" required /></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Giá (VNĐ) (*)</label>
+                        <div class="col-sm-9"><input type="number" name="Price" class="form-control" required /></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu giá mới</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditRate" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("EditRate", "Shipper", new { area = "Adm" }, FormMethod.Post, new { id = "formEditRate", @class = "form-horizontal" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="Id" /> <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Cập nhật Giá ship</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Công ty (*)</label>
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ShipperId", (SelectList)ViewBag.Shippers, new { @class = "form-control", required = "required" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Khu vực</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="ProvinceName" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Trọng lượng (kg)</label>
+                        <div class="col-sm-4"><input type="number" step="0.1" name="MinWeight" class="form-control" required /></div>
+                        <div class="col-sm-1" style="text-align:center; padding: 7px">-</div>
+                        <div class="col-sm-4"><input type="number" step="0.1" name="MaxWeight" class="form-control" required /></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Giá (VNĐ) (*)</label>
+                        <div class="col-sm-9"><input type="number" name="Price" class="form-control" required /></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btn-delete-rate').click(function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var id = btn.data('id');
+
+                if (confirm('Bạn có chắc chắn muốn xóa mức giá này không?')) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteRate", "Shipper")', 
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                $('#row_rate_' + id).fadeOut(500, function () { $(this).remove(); });
+                            } else {
+                                alert(res.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi gọi server.');
+                        }
+                    });
+                }
+            });
+
+            $('.btn-edit-rate').click(function (e) {
+                e.preventDefault();
+                var row = $(this).closest('tr');
+                var id = row.attr('id').replace('row_rate_', '');
+                $('#modalEditRate #Id').val(id);
+                var shipperName = row.find('td:eq(0) strong').text().trim();
+                $('#modalEditRate select[name="ShipperId"] option').filter(function() {
+                    return $(this).text() === shipperName;
+                }).prop('selected', true);
+
+                var province = row.find('td:eq(1)').text().trim();
+                $('#modalEditRate input[name="ProvinceName"]').val(province === "Toàn quốc" ? "" : province);
+
+                var weights = row.find('td:eq(2) span.label-info');
+                $('#modalEditRate input[name="MinWeight"]').val($(weights[0]).text().replace(' kg', '').trim());
+                $('#modalEditRate input[name="MaxWeight"]').val($(weights[1]).text().replace(' kg', '').trim());
+                $('#modalEditRate input[name="Price"]').val(row.find('td:eq(3)').text().replace(/[^0-9]/g, ''));
+
+                $('#modalEditRate').modal('show');
+            });
+
+            $('#formEditRate').submit(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: this.action,
+                    type: this.method,
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            alert('Cập nhật thành công!');
+                            $('#modalEditRate').modal('hide');
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (res.message || 'Không thể cập nhật'));
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi khi gửi dữ liệu!');
+                    }
+                });
+            });
+
+            $('#formAddRate').submit(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: this.action, 
+                    type: this.method,
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            alert('Thêm mới thành công!');
+                            $('#modalAddRate').modal('hide');
+                            location.reload(); 
+                        } else {
+                            alert('Lỗi: ' + (res.message || 'Không thể thêm mới'));
+                        }
+                    },
+                    error: function () {
+                        alert('Lỗi server hoặc đường dẫn không đúng!');
+                    }
+                });
+            });
+        });
+    </script>
+}

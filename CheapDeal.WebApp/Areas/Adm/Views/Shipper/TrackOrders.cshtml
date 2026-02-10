@@ -1,0 +1,230 @@
+﻿@model List<CheapDeal.WebApp.Areas.Adm.Controllers.OrderTrackingViewModel>
+
+@{
+    ViewBag.Title = "Theo dõi đơn vận";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-shipping-fast"></i> Theo dõi đơn vận
+                    </h3>
+                </div>
+                <div class="card-body">
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-filter"></i> Bộ lọc
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    @using (Html.BeginForm("TrackOrders", "Shipper", FormMethod.Get, new { @class = "form-inline" }))
+                                    {
+                                        <div class="form-row align-items-center">
+                                            <div class="col-auto">
+                                                <label class="mr-2">Công ty vận chuyển:</label>
+                                                @Html.DropDownList("shipperId", ViewBag.Shippers as SelectList, "-- Tất cả --", new { @class = "form-control" })
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <label class="mr-2">Trạng thái:</label>
+                                                <select name="status" class="form-control">
+                                                    <option value="">-- Tất cả --</option>
+                                                    <option value="pending">Chờ xử lý</option>
+                                                    <option value="intransit">Đang vận chuyển</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <label class="mr-2">Từ ngày:</label>
+                                                <input type="date" name="fromDate" class="form-control" />
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <label class="mr-2">Đến ngày:</label>
+                                                <input type="date" name="toDate" class="form-control" />
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-search"></i> Tìm kiếm
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>@Model.Count</h3>
+                                    <p>Tổng đơn hàng</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>@Model.Count(o => o.Status == "Chờ xử lý")</h3>
+                                    <p>Chờ xử lý</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small-box bg-primary">
+                                <div class="inner">
+                                    <h3>@Model.Count(o => o.Status == "Đang vận chuyển")</h3>
+                                    <p>Đang vận chuyển</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="ordersTable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Mã KH</th>
+                                    <th>Công ty vận chuyển</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Phí vận chuyển</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model)
+                                {
+                                    <tr data-order-id="@order.OrderID">
+                                        <td>@order.OrderID</td>
+                                        <td>@order.CustomerID</td>
+                                        <td>@order.ShipperName</td>
+                                        <td>@(order.OrderDate.HasValue ? order.OrderDate.Value.ToString("dd/MM/yyyy HH:mm") : "---")</td>
+                                        <td>@order.Freight.ToString("N0") VNĐ</td>
+                                        <td>
+                                            @if (order.Status == "Đang vận chuyển")
+                                            {
+                                                <span class="badge badge-primary">@order.Status</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-warning">@order.Status</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                @if (order.Status == "Chờ xử lý")
+                                                {
+                                                    <button class="btn btn-primary btn-update-status" data-id="@order.OrderID" data-status="intransit">
+                                                        <i class="fas fa-truck"></i> Vận chuyển
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // DataTable
+            $('#ordersTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                },
+                "order": [[3, "desc"]]
+            });
+
+            // Cập nhật trạng thái
+            $(document).on('click', '.btn-update-status', function () {
+                var orderId = $(this).data('id');
+                var newStatus = $(this).data('status');
+                var statusText = newStatus === 'intransit' ? 'Đang vận chuyển' : 'Đã giao';
+
+                if (confirm('Bạn có chắc muốn chuyển đơn hàng #' + orderId + ' sang trạng thái "' + statusText + '"?')) {
+                    $.ajax({
+                        url: '@Url.Action("UpdateOrderStatus", "Shipper")',
+                        type: 'POST',
+                        data: { orderId: orderId, newStatus: newStatus },
+                        success: function (response) {
+                            if (response.success) {
+                                alert('Cập nhật trạng thái thành công!');
+                                location.reload();
+                            } else {
+                                alert('Lỗi: ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Có lỗi xảy ra khi cập nhật trạng thái!');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+@section pluginsStyles {
+    <style>
+        .small-box {
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+            .small-box .inner {
+                padding: 10px;
+            }
+
+                .small-box .inner h3 {
+                    font-size: 38px;
+                    font-weight: bold;
+                    margin: 0 0 10px 0;
+                    color: white;
+                }
+
+                .small-box .inner p {
+                    font-size: 14px;
+                    color: rgba(255,255,255,0.9);
+                    margin: 0;
+                }
+
+            .small-box .icon {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                font-size: 60px;
+                color: rgba(0,0,0,0.15);
+            }
+    </style>
+}

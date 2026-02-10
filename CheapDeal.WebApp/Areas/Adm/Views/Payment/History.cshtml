@@ -1,0 +1,211 @@
+﻿@model CheapDeal.WebApp.Areas.Adm.Controllers.PaymentHistoryViewModel
+
+@{
+    ViewBag.Title = "Lịch sử thanh toán";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h5>Tổng giao dịch</h5>
+                        <h2 class="font-bold">@Model.TotalTransactions</h2>
+                        <small>Giao dịch</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h5>Tổng tiền</h5>
+                        <h2 class="font-bold text-navy">@Model.TotalAmount.ToString("N0") đ</h2>
+                        <small>Tất cả</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h5>Thành công</h5>
+                        <h2 class="font-bold text-success">@Model.SuccessAmount.ToString("N0") đ</h2>
+                        <small>Đã thanh toán</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <h5>Chờ xử lý</h5>
+                        <h2 class="font-bold text-warning">@Model.PendingAmount.ToString("N0") đ</h2>
+                        <small>Đang chờ</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ibox">
+            <div class="ibox-title">
+                <h5><i class="fa fa-history"></i> Lịch sử thanh toán</h5>
+                <div class="ibox-tools">
+                    <button class="btn btn-primary btn-xs" onclick="$('#filterBox').slideToggle()">
+                        <i class="fa fa-filter"></i> Lọc
+                    </button>
+                    <button class="btn btn-success btn-xs" onclick="exportHistory()">
+                        <i class="fa fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <div id="filterBox" style="display: none; margin-bottom: 20px;">
+                    @using (Html.BeginForm("History", "Payment", FormMethod.Get, new { @class = "form-inline" }))
+                    {
+                        <div class="form-group">
+                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..." value="@Model.SearchKeyword">
+                        </div>
+                        <div class="form-group">
+                            <select name="status" class="form-control">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="Success" @(Model.SelectedStatus == "Success" ? "selected" : "")>Thành công</option>
+                                <option value="Pending" @(Model.SelectedStatus == "Pending" ? "selected" : "")>Chờ xử lý</option>
+                                <option value="Failed" @(Model.SelectedStatus == "Failed" ? "selected" : "")>Thất bại</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" name="fromDate" class="form-control" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))">
+                        </div>
+                        <div class="form-group">
+                            <input type="date" name="toDate" class="form-control" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-search"></i> Tìm
+                        </button>
+                        <a href="@Url.Action("History")" class="btn btn-white">
+                            <i class="fa fa-refresh"></i> Reset
+                        </a>
+                    }
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Số tiền</th>
+                                <th>Phương thức</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày GD</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Transactions != null && Model.Transactions.Any())
+                            {
+                                foreach (var item in Model.Transactions)
+                                {
+                                    <tr>
+                                        <td><strong>@item.OrderCode</strong></td>
+                                        <td>@item.CustomerName</td>
+                                        <td><span class="text-navy">@item.Amount.ToString("N0") đ</span></td>
+                                        <td>
+                                            @if (item.PaymentMethod == "MoMo")
+                                            {
+                                                <span class="label label-primary">MoMo</span>
+                                            }
+                                            else if (item.PaymentMethod == "VNPay")
+                                            {
+                                                <span class="label label-info">VNPay</span>
+                                            }
+                                            else if (item.PaymentMethod == "COD")
+                                            {
+                                                <span class="label label-warning">COD</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-default">@item.PaymentMethod</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.Status == "Success")
+                                            {
+                                                <span class="label label-success">Thành công</span>
+                                            }
+                                            else if (item.Status == "Pending")
+                                            {
+                                                <span class="label label-warning">Chờ xử lý</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-danger">Thất bại</span>
+                                            }
+                                        </td>
+                                        <td>@item.PaymentDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <a href="@Url.Action("PaymentDetail", new { id = item.Id })" class="btn btn-xs btn-info">
+                                                <i class="fa fa-eye"></i> Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <p class="text-muted">Không có dữ liệu</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="text-center">
+                        <ul class="pagination">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li><a href="@Url.Action("History", new { page = Model.CurrentPage - 1, search = Model.SearchKeyword, status = Model.SelectedStatus })">«</a></li>
+                            }
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="@(i == Model.CurrentPage ? "active" : "")">
+                                    <a href="@Url.Action("History", new { page = i, search = Model.SearchKeyword, status = Model.SelectedStatus })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li><a href="@Url.Action("History", new { page = Model.CurrentPage + 1, search = Model.SearchKeyword, status = Model.SelectedStatus })">»</a></li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function exportHistory() {
+            if (confirm('Bạn có muốn export dữ liệu?')) {
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': '@Url.Action("ExportHistory", "Payment")'
+                });
+
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: '__RequestVerificationToken',
+                    value: $('input[name="__RequestVerificationToken"]').val()
+                }).appendTo(form);
+
+                form.appendTo('body').submit();
+            }
+        }
+    </script>
+}
+

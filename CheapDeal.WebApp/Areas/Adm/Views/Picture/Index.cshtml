@@ -1,0 +1,85 @@
+﻿@model List<CheapDeal.WebApp.Models.Picture>
+
+@{
+    ViewBag.Title = "Xem hình ảnh sản phẩm";
+}
+
+<h2>Xem hình ảnh sản phẩm</h2>
+
+@using (Html.BeginForm("Index", "Picture", FormMethod.Get, new { area = "Adm" }))  
+{
+    <div class="mb-3">
+        <label>Lọc theo sản phẩm:</label>
+        @Html.DropDownList("productId", (SelectList)ViewBag.Products, "-- Tất cả sản phẩm --", new { @class = "form-control w-25 d-inline-block", onchange = "this.form.submit()" })
+    </div>
+    
+}
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Ảnh (Click để xem sản phẩm)</th>
+            <th>Sản phẩm</th>
+            <th>Chú thích</th>
+            <th>Thứ tự</th>
+            <th>Trạng thái</th>
+            <th>Mô tả sản phẩm</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var product = item.Product;
+                <tr id="row-@item.PictureId">
+                    <td>
+                        <a href="@Url.Action("Details", "Product", new { id = product.ProductId, area = "" })" target="_blank">
+                            <img src="@item.Path" alt="@item.Caption" style="max-width:150px;" class="img-thumbnail" />
+                        </a>
+                    </td>
+                    <td>@product.Name</td>
+                    <td>@item.Caption</td>
+                    <td>@item.OrderNo</td>
+                    <td>
+                        <span class="label @(item.Actived ? "label-success" : "label-danger")">
+                            @(item.Actived ? "Đang dùng" : "Ẩn")
+                        </span>
+                    </td>
+                    <td>
+                        <small>
+                            Giá: @product.Price.ToString("N0") ₫<br />
+                            @product.ShortIntro
+                        </small>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-xs" onclick="deleteImage(@item.PictureId)">
+                            <i class="fa fa-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="7" class="text-center text-muted">Không có ảnh nào.</td></tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script>
+        function deleteImage(id) {
+            if (confirm('Xóa hình ảnh này?')) {
+                $.post('@Url.Action("DeletePicture", "Picture", new { area = "Adm" })', { id: id }, function (res) {
+                    if (res.success) {
+                        $('#row-' + id).fadeOut(500, function() { $(this).remove(); });
+                    } else {
+                        alert(res.message);
+                    }
+                }).fail(function() {
+                    alert('Lỗi kết nối server!');
+                });
+            }
+        }
+    </script>
+}

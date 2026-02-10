@@ -1,0 +1,40 @@
+
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+App_Data/*.mdf
+App_Data/*.ldf
+
+# Zip files
+*.zip
+
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+
+# NuGet Packages
+*.nupkg
+packages/
+**/packages/*
+
+# Others
+*.log
+*.cache
+*.dll
+*.exe
+*.pdb

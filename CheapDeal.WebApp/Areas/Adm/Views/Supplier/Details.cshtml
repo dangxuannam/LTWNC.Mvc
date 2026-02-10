@@ -1,0 +1,74 @@
+﻿@model CheapDeal.WebApp.Models.Supplier
+
+@{
+    ViewBag.Title = "Chi tiết nhà cung cấp";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Thông tin chi tiết nhà cung cấp: @Model.Name</h5>
+            </div>
+            <div class="ibox-content">
+
+                <dl class="dl-horizontal">
+                    <dt>Tên công ty</dt>
+                    <dd>@Html.DisplayFor(model => model.Name)</dd>
+
+                    <dt>Mô tả</dt>
+                    <dd>@Html.DisplayFor(model => model.Description)</dd>
+
+                    <dt>Tên liên hệ</dt>
+                    <dd>@Html.DisplayFor(model => model.ContactName)</dd>
+
+                    <dt>Chức vụ</dt>
+                    <dd>@Html.DisplayFor(model => model.ContactTitle)</dd>
+
+                    <dt>Địa chỉ</dt>
+                    <dd>@Html.DisplayFor(model => model.Address)</dd>
+
+                    <dt>Email</dt>
+                    <dd>@Html.DisplayFor(model => model.Email)</dd>
+
+                    <dt>Điện thoại</dt>
+                    <dd>@Html.DisplayFor(model => model.Phone)</dd>
+
+                    <dt>Fax</dt>
+                    <dd>@Html.DisplayFor(model => model.Fax)</dd>
+
+                    <dt>Website</dt>
+                    <dd>
+                        @if (!string.IsNullOrEmpty(Model.HomePage))
+                        {
+                            <a href="@Model.HomePage" target="_blank">@Model.HomePage</a>
+                        }
+                        else
+                        {
+                            @:Không có
+                        }
+                    </dd>
+
+                    <dt>Trạng thái</dt>
+                    <dd>
+                        <span class="label @(Model.Actived ? "label-primary" : "label-danger")">
+                            @(Model.Actived ? "Hoạt động" : "Không hoạt động")
+                        </span>
+                    </dd>
+                </dl>
+
+                <div class="form-group m-t-lg">
+                    @Html.ActionLink("Cập nhật", "Edit", new { id = Model.SupplierId }, new { @class = "btn btn-primary" })
+                    @using (Html.BeginForm("Delete", "Supplier", new { id = Model.SupplierId }, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?');">
+                            Xóa
+                        </button>
+                    }
+                    @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn btn-default" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

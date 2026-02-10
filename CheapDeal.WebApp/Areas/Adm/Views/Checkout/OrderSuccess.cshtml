@@ -1,0 +1,231 @@
+﻿@model CheapDeal.WebApp.Models.Order
+
+@{
+    ViewBag.Title = "Đặt hàng thành công";
+    var payment = ViewBag.Payment as CheapDeal.WebApp.Models.Payment;
+}
+
+<div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="text-center" style="margin-bottom: 30px;">
+                @if (payment != null && payment.Status == CheapDeal.WebApp.Models.PaymentStatus.Success)
+                {
+                    <i class="fa fa-check-circle text-success" style="font-size: 80px;"></i>
+                    <h2 class="text-success">Thanh toán thành công!</h2>
+                    <p class="lead">Cảm ơn bạn đã mua hàng tại CheapDeal</p>
+                }
+                else
+                {
+                    <i class="fa fa-shopping-cart text-primary" style="font-size: 80px;"></i>
+                    <h2 class="text-primary">Đặt hàng thành công!</h2>
+                    <p class="lead">Đơn hàng của bạn đã được tiếp nhận</p>
+                }
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><i class="fa fa-file-text"></i> Thông tin đơn hàng</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p><strong>Mã đơn hàng:</strong> <span class="text-primary">#@Model.OrderId</span></p>
+                            <p><strong>Ngày đặt:</strong> @Model.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p>
+                                <strong>Trạng thái:</strong>
+                                @switch (Model.Status)
+                                {
+                                    case CheapDeal.WebApp.Models.OrderStatus.New:
+                                        <span class="label label-default">Mới</span>
+                                        break;
+                                    case CheapDeal.WebApp.Models.OrderStatus.Approved:
+                                        <span class="label label-success">Đã xác nhận</span>
+                                        break;
+                                    default:
+                                        <span class="label label-info">@Model.Status</span>
+                                        break;
+                                }
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>Người nhận:</strong> @Model.ShipName</p>
+                            <p><strong>Số điện thoại:</strong> @Model.ShipTel</p>
+                            <p><strong>Địa chỉ:</strong> @Model.ShipAddress</p>
+                        </div>
+                    </div>
+
+                    @if (payment != null)
+                    {
+                        <hr />
+                        <h5><strong>Thông tin thanh toán:</strong></h5>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p><strong>Phương thức:</strong> @payment.PaymentMethod</p>
+                                <p>
+                                    <strong>Trạng thái:</strong>
+                                    @switch (payment.Status)
+                                    {
+                                        case CheapDeal.WebApp.Models.PaymentStatus.Success:
+                                            <span class="label label-success">Đã thanh toán</span>
+                                            break;
+                                        case CheapDeal.WebApp.Models.PaymentStatus.Pending:
+                                            <span class="label label-warning">Chờ thanh toán</span>
+                                            break;
+                                        case CheapDeal.WebApp.Models.PaymentStatus.Failed:
+                                            <span class="label label-danger">Thất bại</span>
+                                            break;
+                                        default:
+                                            <span class="label label-default">@payment.Status</span>
+                                            break;
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-sm-6">
+                                @if (!string.IsNullOrEmpty(payment.TransactionId))
+                                {
+                                    <p><strong>Mã giao dịch:</strong> @payment.TransactionId</p>
+                                }
+                                @if (payment.PaidDate.HasValue)
+                                {
+                                    <p><strong>Thời gian:</strong> @payment.PaidDate?.ToString("dd/MM/yyyy HH:mm")</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><i class="fa fa-list"></i> Chi tiết đơn hàng</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-right">Đơn giá</th>
+                                    <th class="text-right">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.OrderDetails)
+                                {
+                                    var itemTotal = detail.Quantity * detail.Price * (1 - detail.Discount / 100);
+                                    <tr>
+                                        <td>
+                                            @if (detail.Product != null)
+                                            {
+                                                @detail.Product.Name
+                                            }
+                                            else
+                                            {
+                                                <span>Sản phẩm #@detail.ProductId</span>
+                                            }
+                                            @if (detail.Discount > 0)
+                                            {
+                                                <span class="label label-danger">-@detail.Discount%</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">@detail.Quantity</td>
+                                        <td class="text-right">@detail.Price.ToString("N0") ₫</td>
+                                        <td class="text-right"><strong>@itemTotal.ToString("N0") ₫</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="active">
+                                    <td colspan="3" class="text-right"><strong>Tổng cộng:</strong></td>
+                                    <td class="text-right">
+                                        <h4 class="text-danger" style="margin: 0;">
+                                            <strong>@Model.TotalPrice.ToString("N0") ₫</strong>
+                                        </h4>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @if (payment != null)
+            {
+                if (payment.Status == CheapDeal.WebApp.Models.PaymentStatus.Pending)
+                {
+                    if (payment.PaymentMethod == CheapDeal.WebApp.Models.PaymentMethod.BankTransfer)
+                    {
+                        <div class="alert alert-info">
+                            <h5><strong><i class="fa fa-info-circle"></i> Hướng dẫn chuyển khoản:</strong></h5>
+                            <p>Vui lòng chuyển khoản theo thông tin sau:</p>
+                            <ul>
+                                <li><strong>Ngân hàng:</strong> Vietcombank</li>
+                                <li><strong>Số tài khoản:</strong> 1234567890</li>
+                                <li><strong>Chủ tài khoản:</strong> CONG TY CHEAPDEAL</li>
+                                <li><strong>Số tiền:</strong> @Model.TotalPrice.ToString("N0") ₫</li>
+                                <li><strong>Nội dung:</strong> Thanh toan don hang #@Model.OrderId</li>
+                            </ul>
+                            <p class="text-muted">Đơn hàng sẽ được xử lý sau khi chúng tôi xác nhận thanh toán.</p>
+                        </div>
+                    }
+                    else if (payment.PaymentMethod == CheapDeal.WebApp.Models.PaymentMethod.COD)
+                    {
+                        <div class="alert alert-warning">
+                            <h5><strong><i class="fa fa-money"></i> Thanh toán khi nhận hàng (COD):</strong></h5>
+                            <p>Bạn sẽ thanh toán <strong>@Model.TotalPrice.ToString("N0") ₫</strong> khi nhận hàng.</p>
+                            <p class="text-muted">Vui lòng chuẩn bị đủ tiền mặt khi shipper giao hàng.</p>
+                        </div>
+                    }
+                }
+            }
+            <div class="text-center" style="margin-top: 30px;">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                    <i class="fa fa-home"></i> Về trang chủ
+                </a>
+                <a href="@Url.Action("Index", "Product")" class="btn btn-success btn-lg">
+                    <i class="fa fa-shopping-bag"></i> Tiếp tục mua sắm
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null || TempData["Error"] != null)
+            {
+                <div style="margin-top: 20px;">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">
+                            <i class="fa fa-check"></i> @TempData["Success"]
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fa fa-exclamation-triangle"></i> @TempData["Error"]
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .fa-check-circle,
+    .fa-shopping-cart {
+        animation: scaleIn 0.5s ease-in-out;
+    }
+
+    @@keyframes scaleIn {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>
+

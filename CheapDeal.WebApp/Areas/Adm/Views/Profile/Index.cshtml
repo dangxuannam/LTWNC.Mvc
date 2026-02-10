@@ -1,0 +1,162 @@
+﻿@model CheapDeal.WebApp.Models.UserProfile
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5><i class="fa fa-user"></i> Thông tin cá nhân</h5>
+            </div>
+            <div class="ibox-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fa fa-check-circle"></i> @TempData["Success"]
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fa fa-exclamation-circle"></i> @TempData["Error"]
+                    </div>
+                }
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-content profile-content text-center">
+                                <div class="profile-image">
+                                    @if (!string.IsNullOrEmpty(ViewBag.AvatarUrl))
+                                    {
+                                        <img src="@ViewBag.AvatarUrl" class="img-circle circle-border m-b-md" alt="Avatar" id="avatarPreview" style="width: 150px; height: 150px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Content/images/default-avatar.png" class="img-circle circle-border m-b-md" alt="Avatar" id="avatarPreview" style="width: 150px; height: 150px; object-fit: cover;">
+                                    }
+                                </div>
+                                <h3 class="m-t-none m-b">@(ViewBag.FullName ?? ViewBag.UserName)</h3>
+                                <p><i class="fa fa-user-circle"></i> @ViewBag.UserName</p>
+                                <p><i class="fa fa-envelope"></i> @ViewBag.Email</p>
+                                <hr />
+                                <div class="user-button">
+                                    <a href="@Url.Action("ChangePassword")" class="btn btn-primary btn-sm btn-block">
+                                        <i class="fa fa-key"></i> Đổi mật khẩu
+                                    </a>
+                                    <a href="@Url.Action("Messages")" class="btn btn-white btn-sm btn-block">
+                                        <i class="fa fa-envelope"></i> Xem tin nhắn
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-title">
+                                <h5>Chỉnh sửa thông tin</h5>
+                            </div>
+                            <div class="ibox-content">
+                                @using (Html.BeginForm("Index", "Profile", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.FullName, new { @class = "col-sm-3 control-label" })
+                                        <div class="col-sm-9">
+                                            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ và tên" })
+                                            @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Phone, new { @class = "col-sm-3 control-label" })
+                                        <div class="col-sm-9">
+                                            @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                                            @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Address, new { @class = "col-sm-3 control-label" })
+                                        <div class="col-sm-9">
+                                            @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
+                                            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Birthday, new { @class = "col-sm-3 control-label" })
+                                        <div class="col-sm-9">
+                                            @Html.TextBoxFor(m => m.Birthday, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                                            @Html.ValidationMessageFor(m => m.Birthday, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.Gender, new { @class = "col-sm-3 control-label" })
+                                        <div class="col-sm-9">
+                                            <div class="radio radio-info radio-inline">
+                                                @Html.RadioButtonFor(m => m.Gender, true, new { id = "male" })
+                                                <label for="male"> Nam </label>
+                                            </div>
+                                            <div class="radio radio-inline">
+                                                @Html.RadioButtonFor(m => m.Gender, false, new { id = "female" })
+                                                <label for="female"> Nữ </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Ảnh đại diện</label>
+                                        <div class="col-sm-9">
+                                            <input type="file" name="AvatarFile" id="avatarFile" class="form-control" accept="image/*">
+                                            <small class="text-muted">Chấp nhận: JPG, JPEG, PNG, GIF. Tối đa 2MB</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="hr-line-dashed"></div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-save"></i> Lưu thay đổi
+                                            </button>
+                                            <a href="@Url.Action("Index", "Home", new { area = "Adm" })" class="btn btn-white">
+                                                <i class="fa fa-times"></i> Hủy
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>$(document).ready(function () {
+            $('#avatarFile').change(function () {
+                var input = this;
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#avatarPreview').attr('src', e.target.result);
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });</script>
+}

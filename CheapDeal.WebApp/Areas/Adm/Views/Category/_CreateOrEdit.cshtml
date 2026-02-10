@@ -1,0 +1,120 @@
+﻿@model Category
+
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.Name,
+            new { @class = "control-label col-md-2" }))
+    <div class="col-md-10">
+        @(Html.EditorFor(model => model.Name, new
+            {
+                htmlAttributes = new
+                {
+                    @class = "form-control",
+                    id = "CategoryName"
+                }
+            }))
+        @(Html.ValidationMessageFor(model => model.Name,
+                "", new { @class = "text-danger" }))
+    </div>
+</div>
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.Alias,
+     new { @class = "control-label col-md-2" }))
+
+    <div class="col-md-10">
+        @(Html.EditorFor(model => model.Alias,
+       new
+       {
+           htmlAttributes = new
+           {
+               @class = "form-control" ,
+               id = "Alias"
+           }
+       }))
+        @(Html.ValidationMessageFor(model => model.Alias, "",
+        new { @class = "text-danger" }))
+    </div>
+</div>
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.ParentID, "ParentID",
+         new { @class = "control-label col-md-2" }))
+    <div class="col-md-10">
+        @(Html.DropDownList("ParentID", null,
+            "***Chọn nhóm cha***", new { @class = "form-control" }))
+        @Html.ValidationMessageFor(model => model.ParentID,
+                "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.Description,
+        new { @class = "control-label col-md-2" }))
+    <div class="col-md-10">
+        @(Html.EditorFor(model => model.Description, new
+    {
+        htmlAttributes = new
+        {
+            @class = "form-control" ,
+            rows = 3
+        }
+    }))
+        @(Html.ValidationMessageFor(model => model.Description,
+                "", new { @class = "text-danger" }))
+    </div>
+</div>
+
+<div class="form-group">
+    @Html.Label("Chọn file icon", new { @class = "control-label col-md-2" })
+    <div class="col-md-10">
+        @Html.HiddenFor(model => model.IconPath)
+        @(Html.TextBox("upload", null, new {
+            @class = "form-control",
+            type = "file",
+            accept = "image/*"
+        }))
+        @(Html.ValidationMessageFor(model => model.IconPath,
+           "", new { @class = "text-danger" }))
+        <small class="text-muted">Chọn file ảnh JPG, PNG, GIF (tối đa 5MB)</small>
+    </div>
+</div>
+
+<div class="form-group">
+    @Html.HiddenFor(model => model.IconPath)
+    @(Html.TextBox("upload", null, new {
+                        @class = "form-control",
+                        type = "file"
+}))
+    @(Html.ValidationMessageFor(model => model.IconPath,
+       "", new { @class = "text-danger" }))
+</div>
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.OrderNo,
+         new { @class = "control-label col-md-2" }))
+    <div class="col-md-10">
+        @(Html.EditorFor(model => model.OrderNo,
+            new { htmlAttributes = new { @class = "form-control" } }))
+        @(Html.ValidationMessageFor(model => model.OrderNo,
+                "", new { @class = "text-danger" }))
+    </div>
+</div>
+
+<div class="form-group">
+    @(Html.LabelFor(model => model.Actived,
+    htmlAttributes: new { @class = "control-label col-md-2" }))
+    <div class="col-md-10">
+        <div class="checkbox i-checks">
+            @Html.EditorFor(model => model.Actived)
+            @Html.ValidationMessageFor(model => model.Actived,
+                    "", new { @class = "text-danger" })
+        </div>
+    </div>
+</div>
+
+
+
+
+
+}

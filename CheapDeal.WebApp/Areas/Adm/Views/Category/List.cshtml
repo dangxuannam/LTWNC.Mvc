@@ -1,0 +1,171 @@
+﻿@model IEnumerable<Category>
+@{
+    ViewBag.Title = "Quản lý nhóm mặt hàng";
+}
+
+@section pluginsStyles {
+    <link href="~/Content/AdmGrid.css" rel="stylesheet" />
+    <link href="~/Content/plugins/nestable/nestable.css" rel="stylesheet" />
+}
+@helper ShowCategories(Category cate, int level)
+{
+    <li class="dd-item" data-id="@cate.CategoryId">
+        <div class="pull-right td_toggle m-r-md m-t-n-sm">
+
+            <a href="@Url.Action("Index", "Product", new { categoryId = cate.CategoryId })"
+               class="btn btn-info btn-xs"
+               title="Xem danh sách sản phẩm">
+                <i class="fa fa-eye"></i>
+            </a>
+
+            <a href="@Url.Action("Edit", new { id = cate.CategoryId })"
+               class="btn btn-primary btn-xs"
+               title="Cập nhật">
+                <i class="fa fa-pencil"></i>
+            </a>
+
+            <button type="button" class="toggle @(cate.Actived.ToString().ToLower())"
+                    data-toggle-state=true
+                    data-url="@Url.Action("UpdateToggle")"
+                    data-args="Actived_@(cate.Actived.ToString().ToLower())_@(cate.CategoryId)">
+            </button>
+        </div>
+
+        <div class="dd-handle">
+            @if (!string.IsNullOrEmpty(cate.IconPath))
+            {
+                <img src="@Url.Content(cate.IconPath)" alt="cate.IconPath" />
+            }
+            @cate.Name (@cate.Alias) <br />
+            <small>@cate.Description</small>
+        </div>
+
+        @if (cate.ChildCates != null && cate.ChildCates.Any())
+        {
+            <ol class="dd-list">
+                @foreach (var category in cate.ChildCates)
+                {
+                    @ShowCategories(category, level + 1)
+                }
+            </ol>
+        }
+    </li>
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins ">
+            <div class="ibox-title">
+                <h5>Danh sách nhóm mặt hàng</h5>
+                <div class="ibox-tools">
+                    @(Html.Bootstrap()
+                        .ActionLink("Xem dạng bảng","Index")
+                        .Class("btn btn-primary btn-sm")
+                        .PrependIcon("fa fa-th"))
+                    @(Html.Bootstrap()
+                        .ActionLink("Thêm nhóm hàng mới","Create")
+                        .Class("btn btn-primary btn-sm")
+                        .PrependIcon("fa fa-plus"))
+                    @(Html.Bootstrap()
+                        .Button().Text("Mở rộng")
+                        .HtmlAttributes(new { data_action = "expand-all" })
+                        .Class("btn btn-info btn-xs")
+                        .PrependIcon("fa fa-expand"))
+                    @(Html.Bootstrap()
+                        .Button().Text("Thu hẹp")
+                        .HtmlAttributes(new { data_action = "collapse-all" })
+                        .Class("btn btn-info btn-xs")
+                        .PrependIcon("fa fa-compress"))
+                </div>
+            </div>
+
+            <div class="ibox-content p-sm">
+                <div class="dd" id="categories">
+                    <ol class="dd-list">
+
+                        @foreach (var category in Model)
+                        {
+                            @ShowCategories(category, 0)
+                        }
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/plugins/nestable/jquery.nestable.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#categories').on("click", "[data-toggle-state=true]", function (e) {
+                var $this = $(this);
+                var url = $this.attr('data-url');
+                var args = $this.attr('data-args');
+
+                $.post(url,
+                    { "args": args },
+                    function (data) {
+                        if (data.Result) {
+                            $this.attr('data-args', data.Message);
+                            $this.toggleClass('true');
+                        } else {
+                            alert(data.Message);
+                        }
+                    }
+                );
+            });
+        });
+
+        $('#categories').nestable({
+            group: 1,
+            maxDepth: 3,
+            dragFinished: function (currentNode, parentNode) {
+                var pid = 0;
+
+                if (parentNode) {
+                    parentNode = $(parentNode);
+                    pid = parentNode.data('id');
+                } else parentNode = $('#categories');
+
+                var list = parentNode.children('ol');
+                var items = $(list).children('li'), arrayIds = [];
+
+                items.each(function () {
+                    arrayIds.push($(this).data('id'));
+                });
+
+                $.post('/Category/Reorder',
+                    {
+                        "cId": $(currentNode).data('id'),
+                        "pid": pid,
+                        "siblings": arrayIds
+                    },
+                    function (data) {
+                        if (!data.Result) {
+
+                            alert("Lỗi cập nhật: " + data.Message);
+
+                       
+                            window.location.reload();
+                        }
+                    }
+                );
+            }
+        });
+
+        $('div.ibox-tools').on('click', function (e) {
+            var target = $(e.target),
+                action = target.data('action');
+
+            if (action === 'expand-all') {
+                $('.dd').nestable('expandAll');
+            }
+            if (action === 'collapse-all') {
+                $('.dd').nestable('collapseAll');
+            }
+        });
+
+    </script>
+}

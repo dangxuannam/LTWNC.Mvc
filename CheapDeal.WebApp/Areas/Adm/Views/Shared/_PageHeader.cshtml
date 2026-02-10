@@ -1,0 +1,20 @@
+﻿<div class="col-sm-6">
+    <h2>@ViewBag.Title</h2>
+    <ol class="breadcrumb">
+        <li>@Html.ActionLink("CheapDeal", "Index", "Dashboard", new { area = "Adm" }, null)</li>
+        <li class="active"><strong>@ViewBag.PageName "Dashboard"</strong></li>  
+    </ol>
+</div>
+
+<div class="col-sm-6">
+    <div class="title-action">
+        @if (ViewBag.ActionButton != null)
+        {
+            @Html.Raw(ViewBag.ActionButton) 
+        }
+        else
+        {
+            @Html.ActionLink("Một chức năng gì đó", "Index", null, new { @class = "btn btn-primary" })
+        }
+    </div>
+</div>

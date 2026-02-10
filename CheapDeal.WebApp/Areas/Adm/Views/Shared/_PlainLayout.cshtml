@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title- Cheap Deal Shop</title>
+
+
+    @Styles.Render("~/Content/admbootsrap")
+
+    @RenderSection("pluginsStyles", required: false)
+
+    @Styles.Render("~/Content/admstyle")
+
+    @Scripts.Render("~/bundles/modernizr")
+
+</head>
+<body class="gray-bg">
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+        @RenderBody()
+    </div>
+
+    @Scripts.Render("~/bundles/admmainjs")
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

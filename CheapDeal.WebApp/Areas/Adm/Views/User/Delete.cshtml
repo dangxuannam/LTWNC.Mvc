@@ -1,0 +1,119 @@
+﻿@model CheapDeal.WebApp.Models.UserProfile
+
+@{
+    ViewBag.Title = "Xóa người dùng";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2><i class="fa fa-trash"></i> Xóa người dùng</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Dashboard", new { Area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index", "User", new { Area = "Adm" })">Quản lý người dùng</a></li>
+            <li class="active"><strong>Xóa người dùng</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title bg-danger">
+                    <h5><i class="fa fa-exclamation-triangle"></i> Xác nhận xóa người dùng</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="alert alert-danger">
+                        <h4><i class="fa fa-warning"></i> Cảnh báo!</h4>
+                        <p>Bạn có chắc chắn muốn xóa người dùng này? Hành động này <strong>KHÔNG THỂ HOÀN TÁC</strong>.</p>
+                        <p>Tất cả dữ liệu liên quan đến người dùng này sẽ bị xóa vĩnh viễn!</p>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Thông tin người dùng sẽ bị xóa</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="dl-horizontal">
+                                        <dt>Tên đăng nhập:</dt>
+                                        <dd><strong>@Model.Account.UserName</strong></dd>
+
+                                        <dt>Email:</dt>
+                                        <dd><strong>@Model.Account.Email</strong></dd>
+
+                                        <dt>Họ và tên:</dt>
+                                        <dd>@(Model.FullName ?? "Chưa cập nhật")</dd>
+
+                                        <dt>Số điện thoại:</dt>
+                                        <dd>@(Model.Phone ?? "Chưa cập nhật")</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="dl-horizontal">
+                                        <dt>Vai trò:</dt>
+                                        <dd><span class="label label-primary">@ViewBag.UserRoles</span></dd>
+
+                                        <dt>Trạng thái:</dt>
+                                        <dd>
+                                            @if (Model.Account.IsActive)
+                                            {
+                                                <span class="label label-success">Đang hoạt động</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="label label-danger">Đã khóa</span>
+                                            }
+                                        </dd>
+
+                                        <dt>Ngày tạo:</dt>
+                                        <dd>@Model.Account.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                        <dt>Địa chỉ:</dt>
+                                        <dd>@(Model.Address ?? "Chưa cập nhật")</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @using (Html.BeginForm("Delete", "User", FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("id", Model.AccountId)
+
+                        <div class="form-group">
+                            <div class="col-md-12 text-center">
+                                <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('BẠN CÓ CHẮC CHẮN MUỐN XÓA NGƯỜI DÙNG NÀY? Hành động này không thể hoàn tác!');">
+                                    <i class="fa fa-trash"></i> Xác nhận XÓA
+                                </button>
+                                <a href="@Url.Action("Index")" class="btn btn-default btn-lg">
+                                    <i class="fa fa-times"></i> Hủy bỏ
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-danger {
+        background-color: #ed5565 !important;
+        color: white;
+    }
+
+    .dl-horizontal dt {
+        text-align: left;
+        width: 150px;
+    }
+
+    .dl-horizontal dd {
+        margin-left: 170px;
+    }
+</style>
+

@@ -1,0 +1,280 @@
+﻿@model List<CheapDeal.WebApp.Models.Message>
+@{
+    ViewBag.Title = "Tin nhắn";
+    var currentUserId = ViewBag.CurrentUserId as string;
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5><i class="fa fa-envelope"></i> Hộp thư đến</h5>
+                <div class="ibox-tools">
+                    <span class="label label-primary">Tổng: @Model.Count</span>
+                    <span class="label label-warning" id="unreadBadge">Chưa đọc: @ViewBag.UnreadCount</span>
+                </div>
+            </div>
+            <div class="ibox-content">
+                @if (Model.Count == 0)
+                {
+                    <div class="text-center p-lg">
+                        <i class="fa fa-inbox fa-5x text-muted"></i>
+                        <h3 class="font-bold">Chưa có tin nhắn</h3>
+                        <p class="text-muted">Bạn chưa có tin nhắn nào trong hộp thư</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="mail-box">
+                        <table class="table table-hover table-mail">
+                            <tbody>
+                                @foreach (var message in Model)
+                                {
+                                    var isReceived = message.ReceiverId == currentUserId;
+                                    var isUnread = isReceived && !message.IsRead;
+                                    var partner = isReceived ? message.Sender : message.Receiver;
+
+                                    string avatarUrl = "/Content/images/default-avatar.png";
+                                    string displayName = partner?.UserName ?? "Unknown";
+
+                                    var userProfileProperty = partner?.GetType().GetProperty("UserProfile");
+                                    if (userProfileProperty != null)
+                                    {
+                                        var userProfile = userProfileProperty.GetValue(partner);
+                                        if (userProfile != null)
+                                        {
+                                            var avatarUrlProp = userProfile.GetType().GetProperty("AvatarUrl");
+                                            var fullNameProp = userProfile.GetType().GetProperty("FullName");
+
+                                            if (avatarUrlProp != null)
+                                            {
+                                                var avatar = avatarUrlProp.GetValue(userProfile) as string;
+                                                if (!string.IsNullOrEmpty(avatar))
+                                                {
+                                                    avatarUrl = avatar;
+                                                }
+                                            }
+
+                                            if (fullNameProp != null)
+                                            {
+                                                var fullName = fullNameProp.GetValue(userProfile) as string;
+                                                if (!string.IsNullOrEmpty(fullName))
+                                                {
+                                                    displayName = fullName;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    <tr class="message-item @(isUnread ? "unread" : "read")" data-message-id="@message.MessageId">
+                                        <td class="check-mail" style="width: 40px;">
+                                            @if (isUnread)
+                                            {
+                                                <span class="label label-warning"><i class="fa fa-circle"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-circle-o text-muted"></i>
+                                            }
+                                        </td>
+                                        <td class="mail-avatar" style="width: 50px;">
+                                            <img src="@avatarUrl" alt="Avatar" class="img-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                        </td>
+                                        <td class="mail-contact">
+                                            <strong>
+                                                @if (isReceived)
+                                                {
+                                                    @displayName
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Đến: </span>@displayName
+                                                }
+                                            </strong>
+                                        </td>
+                                        <td class="mail-subject" style="cursor: pointer;" onclick="toggleMessage(@message.MessageId)">
+                                            <strong>@message.Subject</strong>
+                                            <br />
+                                            <span class="text-muted">
+                                                @(message.Content.Length > 80 ? message.Content.Substring(0, 80) + "..." : message.Content)
+                                            </span>
+                                        </td>
+                                        <td class="mail-date" style="width: 150px;">
+                                            <small class="text-muted">@message.SentDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </td>
+                                        <td class="mail-actions" style="width: 100px;">
+                                            @if (isUnread)
+                                            {
+                                                <button class="btn btn-xs btn-white" onclick="markAsRead(@message.MessageId)" title="Đánh dấu đã đọc">
+                                                    <i class="fa fa-check text-navy"></i>
+                                                </button>
+                                            }
+                                            <button class="btn btn-xs btn-white" onclick="deleteMessage(@message.MessageId)" title="Xóa">
+                                                <i class="fa fa-trash text-danger"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr id="message-detail-@message.MessageId" style="display: none;" class="message-detail-row">
+                                        <td colspan="6">
+                                            <div class="mail-box-detail">
+                                                <div class="mail-box-header">
+                                                    <h4>@message.Subject</h4>
+                                                    <div class="mail-box-info">
+                                                        <span class="text-muted">
+                                                            Từ: <strong>@(isReceived ? displayName : "Bạn")</strong>
+                                                        </span>
+                                                        <span class="text-muted pull-right">
+                                                            <i class="fa fa-clock-o"></i> @message.SentDate.ToString("dd/MM/yyyy HH:mm:ss")
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="mail-box-content">
+                                                    @Html.Raw(message.Content.Replace("\n", "<br>"))
+                                                </div>
+                                                @if (message.IsRead && message.ReadDate.HasValue)
+                                                {
+                                                    <div class="mail-box-footer">
+                                                        <small class="text-muted">
+                                                            <i class="fa fa-check-double"></i> Đã đọc lúc: @message.ReadDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                        </small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-item.unread {
+        background-color: #f3f6fb;
+        font-weight: 600;
+    }
+
+    .message-item:hover {
+        background-color: #f9f9f9;
+    }
+
+    .mail-box-detail {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+
+    .mail-box-header {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e7eaec;
+        margin-bottom: 15px;
+    }
+
+        .mail-box-header h4 {
+            margin: 0 0 10px;
+            font-weight: 600;
+        }
+
+    .mail-box-info {
+        font-size: 12px;
+    }
+
+    .mail-box-content {
+        padding: 15px 0;
+        line-height: 1.6;
+    }
+
+    .mail-box-footer {
+        padding-top: 15px;
+        border-top: 1px solid #e7eaec;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function toggleMessage(messageId) {
+            $('#message-detail-' + messageId).slideToggle();
+        }
+
+        function markAsRead(messageId) {
+            $.ajax({
+                url: '@Url.Action("MarkAsRead", "Profile")',
+                type: 'POST',
+                data: { messageId: messageId },
+                success: function (response) {
+                    if (response.success) {
+                        var row = $('[data-message-id="' + messageId + '"]');
+                        row.removeClass('unread').addClass('read');
+                        row.find('.check-mail').html('<i class="fa fa-circle-o text-muted"></i>');
+                        row.find('.btn-white:has(.fa-check)').remove();
+                        var unreadBadge = $('#unreadBadge');
+                        var currentCount = parseInt(unreadBadge.text().split(': ')[1]);
+                        unreadBadge.text('Chưa đọc: ' + (currentCount - 1));
+
+                        toastr.success('Đã đánh dấu tin nhắn là đã đọc');
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Có lỗi xảy ra');
+                }
+            });
+        }
+
+        function deleteMessage(messageId) {
+            if (confirm('Bạn có chắc muốn xóa tin nhắn này?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteMessage", "Profile")',
+                    type: 'POST',
+                    data: { messageId: messageId },
+                    success: function (response) {
+                        if (response.success) {
+                            var row = $('[data-message-id="' + messageId + '"]');
+                            var detailRow = $('#message-detail-' + messageId);
+
+                            row.fadeOut(function () {
+                                $(this).remove();
+                                detailRow.remove();
+
+                                if ($('.message-item').length === 0) {
+                                    $('.mail-box').html(
+                                        '<div class="text-center p-lg">' +
+                                        '<i class="fa fa-inbox fa-5x text-muted"></i>' +
+                                        '<h3 class="font-bold">Chưa có tin nhắn</h3>' +
+                                        '<p class="text-muted">Bạn chưa có tin nhắn nào trong hộp thư</p>' +
+                                        '</div>'
+                                    );
+                                }
+
+                                var totalBadge = $('.label-primary');
+                                var currentTotal = parseInt(totalBadge.text().split(': ')[1]);
+                                totalBadge.text('Tổng: ' + (currentTotal - 1));
+                            });
+
+                            toastr.success('Đã xóa tin nhắn');
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Có lỗi xảy ra');
+                    }
+                });
+            }
+        }
+
+        setInterval(function () {
+            $.get('@Url.Action("GetUnreadCount", "Profile")', function (response) {
+                if (response.success) {
+                    $('#unreadBadge').text('Chưa đọc: ' + response.count);
+                }
+            });
+        }, 30000);
+    </script>
+}

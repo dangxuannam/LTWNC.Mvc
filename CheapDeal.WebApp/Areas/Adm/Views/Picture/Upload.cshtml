@@ -1,0 +1,56 @@
+﻿@model CheapDeal.WebApp.Models.Picture
+@{ ViewBag.Title = "Upload hình ảnh"; }
+
+<div class="ibox-content">
+    <h3>Upload hình ảnh sản phẩm</h3>
+
+    @using (Html.BeginForm("Upload", "Picture", FormMethod.Post, new { id = "uploadForm", enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label>Chọn sản phẩm (*)</label>
+            @Html.DropDownListFor(m => m.ProductId, (SelectList)ViewBag.Products, "-- Chọn sản phẩm --", new { @class = "form-control", required = "required" })
+        </div>
+
+        <div class="form-group">
+            <label>Chú thích ảnh</label>
+            @Html.TextBoxFor(m => m.Caption, new { @class = "form-control", placeholder = "Nhập chú thích (VD: Màu đỏ mặt sau)" })
+        </div>
+
+        <div class="form-group">
+            <label>File ảnh (*)</label>
+            <input type="file" name="imageFile" accept="image/*" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="fa fa-upload"></i> Upload & Cập nhật</button>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $('#uploadForm').submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this); 
+
+            $.ajax({
+                url: this.action,
+                type: 'POST',
+                data: formData,
+                contentType: false, 
+                processData: false, 
+                success: function (res) {
+                    if (res.success) {
+                        alert(res.message);
+                        window.location.href = res.redirectUrl; 
+                    } else {
+                        alert(res.message);
+                    }
+                },
+                error: function () {
+                    alert('Lỗi kết nối server!');
+                }
+            });
+        });
+    </script>
+}

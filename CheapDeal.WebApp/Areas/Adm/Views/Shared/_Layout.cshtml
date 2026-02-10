@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title - WebTaiSan </title>
+    @Styles.Render("~/Content/style.css")
+
+    @RenderSection("pluginsStyles", required: false)
+
+    @Styles.Render("~/Content/admin-styles")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/inspinia")
+    @section pluginsStyles {
+         
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    }
+
+    <style>
+        #page-wrapper {
+            background: #ffffff !important;
+            min-height: 100vh;
+        }
+
+        .gray-bd, .gray-bg {
+            background: #ffffff !important;
+        }
+
+        .wrapper-content {
+            background: #ffffff !important;
+        }
+
+        .white-bg {
+            background-color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        @Html.Partial("_Navigation")
+        <div id="page-wrapper" class="gray-bd">
+            <div class="row border-bottom">
+                @Html.Partial("_NavBarHeader")
+            </div>
+
+            <div class="row wrapper border-bottom white-bg page-heading">
+                @Html.Partial("_PageHeader")
+            </div>
+
+            <div class="wrapper wrapper-content animated fadeInRight">
+                @RenderBody()
+            </div>
+
+            <div class="wrapper wrapper-content">
+                @Html.Partial("_Footer")
+            </div>
+        </div>
+
+        @Scripts.Render("~/bundles/admmainjs")
+        @Scripts.Render("~/bundles/admcustomjs")
+        @Scripts.Render("~/bundles/inspinia-js")
+
+        <script>
+            $(document).ready(function () {
+                if (typeof $.fn.metisMenu === 'function') {
+                    $('#side-menu').metisMenu();
+                }
+            });
+        </script>
+
+        @RenderSection("pluginScripts", required: false)
+
+        @RenderSection("Scripts", required: false)
+    </div>
+</body>
+</html>

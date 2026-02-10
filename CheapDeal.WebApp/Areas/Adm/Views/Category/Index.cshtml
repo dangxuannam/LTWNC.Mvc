@@ -1,0 +1,163 @@
+﻿@model IEnumerable<Category>
+@{
+    ViewBag.Title = "Quản lý nhóm mặt hàng";
+}
+
+@section pluginsStyles {
+    <link href="~/Content/AdmGrid.css" rel="stylesheet" />
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Danh sách nhóm mặt hàng </h5>
+
+                <div class="ibox-tools">
+                    @(Html.Bootstrap()
+                        .ActionLink("Xem dạng phân cấp ","List")
+                        .Class("btn btn-primary btn-sm")
+                        .PrependIcon("fa fa-indent"))
+                    @(Html.Bootstrap()
+                        .ActionLink("Thêm nhóm hàng mới  ","Create")
+                        .Class("btn btn-primary btn-sm")
+                        .PrependIcon("fa fa-plus"))
+                </div>
+            </div>
+            <div class="ibox-content p-sm">
+
+                <table id="tblcategories"
+                       class="table table-responsive table-bordered table-hover table-striped">
+                    <tr>
+
+                        <th>
+                            @Html.DisplayNameFor(model => model.ParentID)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Alias)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Description)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.IconPath)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Actived)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.OrderNo)
+                        </th>
+                        <th></th>
+                    </tr>
+
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Parent.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Alias)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(item.IconPath))
+                                {
+                                    <img src="@Url.Content(item.IconPath)" alt="@item.IconPath" />
+                                }
+                            </td>
+                            <td class=" td_toggle">
+                                <button type="button" class="toggle @(item.Actived.ToString().ToLower())"
+                                        data-toggle-state="true"
+                                        data-url="@Url.Action("UpdateToggle")"
+                                        data-args="Actived_@(item.Actived.ToString().ToLower())_@(item.CategoryId)">
+                                </button>
+                            </td>
+                            <td class="text-center hidden-xs hidden-sm">
+                                @{
+                                    var siblings = Model.Where(x => x.ParentID == item.ParentID).ToList();
+                                    bool isFirst = siblings.First().CategoryId == item.CategoryId;
+                                    bool isLast = siblings.Last().CategoryId == item.CategoryId;
+                                }
+
+                                @if (!isFirst)
+                                {
+                                    <a href="@Url.Action("Reorder", new { id = item.CategoryId, direction = 0 })"
+                                       class="btn btn-xs btn-info" title="Lên trên">
+                                        <i class="fa fa-arrow-up"></i> ▲
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="display:inline-block; width: 24px;"></span>
+                                }
+
+                                <span class="badge">@item.OrderNo</span>
+
+                                @if (!isLast)
+                                {
+                                    <a href="@Url.Action("Reorder", new { id = item.CategoryId, direction = 1 })"
+                                       class="btn btn-xs btn-warning" title="Xuống dưới">
+                                        <i class="fa fa-arrow-down"></i> ▼
+                                    </a>
+                                }
+                            </td>
+                            <td>
+                                @(Html.Bootstrap()
+                .ActionLink("","Edit")
+                .RouteValues(new {id = item.CategoryId})
+                .Title("Cập nhật")
+                .AppendIcon("fa fa-pencil fa-2x"))
+                                @(Html.Bootstrap()
+                .ActionLink("","Incate","Product")
+                .Class("ajax-link")
+                .RouteValues(new {id = item.CategoryId})
+                .AppendIcon("fa fa-gift  fa-2x")
+                .Title("Xem danh sách sản phẩm"))
+                            </td>
+                        </tr>
+                    }
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#tblcategories tr').on("click", "[data-toggle-state=true]", function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var url = $this.attr('data-url');
+                var args = $this.attr('data-args');
+
+                $.post(url,
+                    { "args": args },
+                    function (data) {
+                        if (data.Result) {
+                            $this.attr('data-args', data.Message);
+                            $this.toggleClass('true');
+                        } else {
+                            alert(data.Message);
+                        }
+                    }
+                ).fail(function (error) {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi cập nhật!');
+                });
+            });
+        });
+    </script>
+}

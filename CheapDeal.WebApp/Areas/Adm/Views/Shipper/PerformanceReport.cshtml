@@ -1,0 +1,297 @@
+﻿@model List<CheapDeal.WebApp.Areas.Adm.Controllers.ShipperPerformanceViewModel>
+
+@{
+    ViewBag.Title = "Báo cáo hiệu suất công ty vận chuyển";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Báo cáo hiệu suất công ty vận chuyển
+                    </h3>
+                </div>
+                <div class="card-body">
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-filter"></i> Bộ lọc thời gian
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    @using (Html.BeginForm("PerformanceReport", "Shipper", FormMethod.Get, new { @class = "form-inline" }))
+                                    {
+                                        <div class="form-row align-items-center">
+                                            <div class="col-auto">
+                                                <label class="mr-2">Công ty vận chuyển:</label>
+                                                @Html.DropDownList("shipperId", ViewBag.Shippers as SelectList, "-- Tất cả --", new { @class = "form-control" })
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <label class="mr-2">Từ ngày:</label>
+                                                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <label class="mr-2">Đến ngày:</label>
+                                                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+                                            </div>
+
+                                            <div class="col-auto ml-3">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-search"></i> Xem báo cáo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Số lượng đơn hàng theo công ty</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="ordersChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Doanh thu theo công ty</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="revenueChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="performanceTable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Công ty vận chuyển</th>
+                                    <th class="text-center">Tổng đơn</th>
+                                    <th class="text-center">Chờ xử lý</th>
+                                    <th class="text-center">Đang vận chuyển</th>
+                                    <th class="text-center">Tỷ lệ giao hàng</th>
+                                    <th class="text-right">Tổng doanh thu</th>
+                                    <th class="text-center">Xếp hạng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rank = 1;
+                                }
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@item.ShipperName</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-primary badge-lg">@item.TotalOrders</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-warning">@item.PendingOrders</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-info">@item.InTransitOrders</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="progress" style="height: 25px; min-width: 100px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: @(item.DeliveryRate.ToString("F1"))">
+                                                    @item.DeliveryRate.ToString("F1")%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong class="text-success">@item.TotalRevenue.ToString("N0") VNĐ</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rank == 1)
+                                            {
+                                                <span class="badge badge-warning badge-lg">
+                                                    <i class="fas fa-medal"></i> #@rank
+                                                </span>
+                                            }
+                                            else if (rank <= 3)
+                                            {
+                                                <span class="badge badge-info badge-lg">
+                                                    <i class="fas fa-award"></i> #@rank
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">#@rank</span>
+                                            }
+                                            @{ rank++; }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <th class="text-right">TỔNG CỘNG:</th>
+                                    <th class="text-center">@Model.Sum(x => x.TotalOrders)</th>
+                                    <th class="text-center">@Model.Sum(x => x.PendingOrders)</th>
+                                    <th class="text-center">@Model.Sum(x => x.InTransitOrders)</th>
+                                    <th class="text-center">
+                                        @if (Model.Sum(x => x.TotalOrders) > 0)
+                                        {
+                                            var avgRate = (Model.Sum(x => x.InTransitOrders) * 100.0 / Model.Sum(x => x.TotalOrders));
+                                            @avgRate.ToString("F1")<text>%</text>
+                                        }
+                                    </th>
+                                    <th class="text-right">
+                                        <strong class="text-success">@Model.Sum(x => x.TotalRevenue).ToString("N0") VNĐ</strong>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    @if (Model.Any())
+                    {
+                        var topPerformer = Model.First();
+
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-lightbulb"></i> Nhận xét
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2">
+                                                <i class="fas fa-star text-warning"></i>
+                                                <strong>Công ty xuất sắc nhất:</strong>
+                                                @topPerformer.ShipperName với @topPerformer.TotalOrders đơn hàng và doanh thu @topPerformer.TotalRevenue.ToString("N0") VNĐ
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-chart-pie text-success"></i>
+                                                <strong>Tổng số đơn hàng:</strong>
+                                                @Model.Sum(x => x.TotalOrders) đơn
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-dollar-sign text-success"></i>
+                                                <strong>Tổng doanh thu:</strong>
+                                                @Model.Sum(x => x.TotalRevenue).ToString("N0") VNĐ
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $('#performanceTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                },
+                "order": [[1, "desc"]],
+                "pageLength": 25
+            });
+
+            // Dữ liệu cho biểu đồ
+            var shipperNames = @Html.Raw(Json.Encode(Model.Select(x => x.ShipperName)));
+            var totalOrders = @Html.Raw(Json.Encode(Model.Select(x => x.TotalOrders)));
+            var revenues = @Html.Raw(Json.Encode(Model.Select(x => x.TotalRevenue)));
+
+            // Biểu đồ số lượng đơn hàng
+            var ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            new Chart(ordersCtx, {
+                type: 'bar',
+                data: {
+                    labels: shipperNames,
+                    datasets: [{
+                        label: 'Tổng đơn hàng',
+                        data: totalOrders,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Biểu đồ doanh thu
+            var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'pie',
+                data: {
+                    labels: shipperNames,
+                    datasets: [{
+                        data: revenues,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
+@section pluginsStyles {
+    <style>
+        .badge-lg {
+            font-size: 14px;
+            padding: 8px 12px;
+        }
+
+        .progress {
+            border: 1px solid #ddd;
+        }
+
+        .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+}

@@ -1,0 +1,98 @@
+﻿@model List<CheapDeal.WebApp.Models.Picture>
+@{ ViewBag.Title = "Thư viện ảnh"; }
+
+<div class="ibox-content">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h4>Bộ lọc thư viện</h4>
+            <form method="get" action="@Url.Action("Library")" class="form-inline">
+                <div class="form-group mr-2">
+                    <label class="mr-2">Danh mục:</label>
+                    @Html.DropDownList("categoryId", (SelectList)ViewBag.Categories, "-- Tất cả --", new { @class = "form-control", onchange = "this.form.submit()" })
+                </div>
+
+                <div class="form-group">
+                    <label class="mr-2">Sản phẩm:</label>
+                    @Html.DropDownList("productId", (SelectList)ViewBag.Products, "-- Tất cả --", new { @class = "form-control", onchange = "this.form.submit()" })
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr />
+
+    @if (Model.Any())
+    {
+        var grouped = Model.GroupBy(p => p.Product);
+        foreach (var group in grouped)
+        {
+            var product = group.Key;
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>@product.Name</strong>
+                    <span class="pull-right label label-info">@product.Name</span>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        @foreach (var pic in group)
+                        {
+                            <div class="col-md-3 col-sm-4 mb-3" id="box-@pic.PictureId">
+                                <div class="thumbnail" style="position:relative">
+
+                                    <button class="btn btn-danger btn-xs"
+                                            style="position:absolute; top:5px; right:5px; z-index:99;"
+                                            onclick="deleteImage(@pic.PictureId)">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+
+                                    <a href="@Url.Action("Details", "Product", new { id = product.ProductId, area = "Adm" })"
+                                       title="Xem chi tiết @product.Name">
+                                        <img src="@pic.Path" alt="@pic.Caption" style="height: 180px; width: 100%; object-fit: cover;" />
+                                    </a>
+
+                                    <div class="caption text-center">
+                                        <p><strong>@pic.Caption</strong></p>
+                                        <p class="small text-muted" style="height: 40px; overflow: hidden;">
+                                            @(product.ShortIntro ?? "Chưa có mô tả ngắn")
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    else
+    {
+        <div class="alert alert-warning">Chưa có ảnh nào khớp với bộ lọc.</div>
+    }
+
+</div>
+@section Scripts {
+    <script>
+        $('#categoryId').change(function () {
+            var catId = $(this).val();
+            var productDropdown = $('#productId');
+
+            productDropdown.html('<option value="">-- Tất cả --</option>');
+
+            if (catId) {
+                $.getJSON('@Url.Action("GetProductsByCategory", "Picture", new { area = "Adm" })?categoryId=' + catId, function (data) {
+                    $.each(data, function (i, item) {
+                        productDropdown.append($('<option>', {
+                            value: item.ProductId,
+                            text: item.Name
+                        }));
+                    });
+                });
+            }
+            this.form.submit();
+        });
+
+        $('#productId').change(function () {
+            this.form.submit();
+        });
+    </script>
+}

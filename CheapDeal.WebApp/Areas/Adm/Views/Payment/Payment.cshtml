@@ -1,0 +1,247 @@
+﻿@model CheapDeal.WebApp.Areas.Adm.Controllers.PaymentGatewayViewModel
+
+@{
+    ViewBag.Title = "Các cổng thanh toán";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="ibox">
+            <div class="ibox-title">
+                <h5><i class="fa fa-credit-card"></i> Quản lý các cổng thanh toán</h5>
+                <div class="ibox-tools">
+                    <span class="label label-primary">6 phương thức</span>
+                </div>
+            </div>
+            <div class="ibox-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <i class="fa fa-check"></i> @TempData["Success"]
+                    </div>
+                }
+
+                @using (Html.BeginForm("Payment", "Payment", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <!-- MOMO -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h4><i class="fa fa-mobile"></i> Ví điện tử MoMo</h4>
+                                </div>
+                                <div class="col-sm-3 text-right">
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(m => m.EnableMomo, new { @class = "toggle-switch", data_target = "momo-settings" })
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body momo-settings">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Partner Code</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.MomoPartnerCode, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Access Key</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.MomoAccessKey, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Secret Key</label>
+                                <div class="col-sm-9">
+                                    @Html.PasswordFor(m => m.MomoSecretKey, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VNPAY -->
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h4><i class="fa fa-credit-card"></i> VNPay</h4>
+                                </div>
+                                <div class="col-sm-3 text-right">
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(m => m.EnableVNPay, new { @class = "toggle-switch", data_target = "vnpay-settings" })
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body vnpay-settings">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">TMN Code</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.VNPayTmnCode, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Hash Secret</label>
+                                <div class="col-sm-9">
+                                    @Html.PasswordFor(m => m.VNPayHashSecret, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BANK TRANSFER -->
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h4><i class="fa fa-bank"></i> Chuyển khoản ngân hàng</h4>
+                                </div>
+                                <div class="col-sm-3 text-right">
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(m => m.EnableBankTransfer, new { @class = "toggle-switch", data_target = "bank-settings" })
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body bank-settings">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Tên ngân hàng</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.BankName, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Số tài khoản</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.BankAccountNumber, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Tên chủ TK</label>
+                                <div class="col-sm-9">
+                                    @Html.TextBoxFor(m => m.BankAccountName, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COD -->
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h4><i class="fa fa-money"></i> Thanh toán khi nhận hàng (COD)</h4>
+                                </div>
+                                <div class="col-sm-3 text-right">
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(m => m.EnableCOD, new { @class = "toggle-switch", data_target = "cod-settings" })
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body cod-settings">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Phí COD</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.CODFee, new { @class = "form-control", type = "number" })
+                                        <span class="input-group-addon">VNĐ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa fa-save"></i> Lưu cài đặt
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>$('.toggle-switch').each(function() {
+            var target = '.' + $(this).data('target');
+            if (!$(this).is(':checked')) {
+                $(target).find('input').prop('disabled', true);
+                $(target).css('opacity', '0.5');
+            }
+        });
+
+        $('.toggle-switch').on('change', function() {
+            var target = '.' + $(this).data('target');
+            if ($(this).is(':checked')) {
+                $(target).find('input').prop('disabled', false);
+                $(target).css('opacity', '1');
+            } else {
+                $(target).find('input').prop('disabled', true);
+                $(target).css('opacity', '0.5');
+            }
+        });</script>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: .4s;
+            }
+
+        input:checked + .slider {
+            background-color: #1ab394;
+        }
+
+            input:checked + .slider:before {
+                transform: translateX(26px);
+            }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+            .slider.round:before {
+                border-radius: 50%;
+            }
+    </style>
+}
+

@@ -1,0 +1,317 @@
+﻿@model CheapDeal.WebApp.Models.EditUserViewModel
+@{
+    ViewBag.Title = "Chỉnh sửa Người dùng";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+    var user = ViewBag.User as CheapDeal.WebApp.Models.Account;
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2><i class="fa fa-edit"></i> Chỉnh sửa Người dùng</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home", new { Area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index", "User")">Quản lý người dùng</a></li>
+            <li class="active"><strong>Chỉnh sửa</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-edit"></i> Chỉnh sửa thông tin: <strong>@Model.UserName</strong></h5>
+                </div>
+                <div class="ibox-content">
+                    @using (Html.BeginForm("Edit", "User", FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.AccountId)
+
+                            if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger alert-dismissable">
+                                <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                                <strong>Lỗi!</strong> Vui lòng kiểm tra lại thông tin.
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.UserName, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @readonly = "readonly" })
+                                <span class="help-block m-b-none">Tên đăng nhập không thể thay đổi</span>
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Email, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", required = "required" })
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.FullName, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ tên đầy đủ" })
+                                @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Phone, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                                @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Address, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = 3, placeholder = "Nhập địa chỉ" })
+                                @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Birthday, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-4">
+                                @Html.TextBoxFor(m => m.Birthday, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                                @Html.ValidationMessageFor(m => m.Birthday, "", new { @class = "text-danger" })
+                            </div>
+
+                            @Html.LabelFor(model => model.Gender, "Giới tính", new { @class = "col-lg-2 control-label" })
+                            <div class="col-lg-10">
+                                @Html.DropDownListFor(model => model.Gender,
+                                         new SelectList(new[] {
+                                         new { Value = "", Text = "-- Chọn --" },
+                                         new { Value = "true", Text = "Nam" },
+                                         new { Value = "false", Text = "Nữ" }
+                         }, "Value", "Text", Model.Gender?.ToString().ToLower()),
+                                         new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Role, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(m => m.Role, (SelectList)ViewBag.Roles, "-- Chọn vai trò --", new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
+                                <span class="help-block m-b-none">
+                                    <i class="fa fa-info-circle"></i> Vai trò chính của người dùng.
+                                    Để phân quyền chi tiết, sử dụng <a href="@Url.Action("ManageRoles", new { id = Model.AccountId })">Quản lý phân quyền</a>.
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <a href="@Url.Action("Index")" class="btn btn-white">
+                                    <i class="fa fa-times"></i> Hủy bỏ
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-save"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-key"></i> Quản lý mật khẩu</h5>
+                </div>
+                <div class="ibox-content">
+                    <p>
+                        <i class="fa fa-info-circle text-info"></i>
+                        Reset mật khẩu sẽ gửi email hướng dẫn đổi mật khẩu cho người dùng.
+                    </p>
+                    <a href="@Url.Action("ResetPassword", new { id = Model.AccountId })" class="btn btn-warning">
+                        <i class="fa fa-refresh"></i> Reset mật khẩu
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-shield"></i> Trạng thái tài khoản</h5>
+                </div>
+                <div class="ibox-content">
+                    @if (user != null)
+                    {
+                        if (user.IsActive)
+                        {
+                            <p>
+                                <span class="label label-primary">
+                                    <i class="fa fa-check"></i> Tài khoản đang hoạt động
+                                </span>
+                            </p>
+                            <button type="button" class="btn btn-danger" onclick="toggleStatus('@Model.AccountId', false)">
+                                <i class="fa fa-lock"></i> Khóa tài khoản
+                            </button>
+                        }
+                        else
+                        {
+                            <p>
+                                <span class="label label-danger">
+                                    <i class="fa fa-lock"></i> Tài khoản đã bị khóa
+                                </span>
+                            </p>
+                            <button type="button" class="btn btn-success" onclick="toggleStatus('@Model.AccountId', true)">
+                                <i class="fa fa-unlock"></i> Kích hoạt tài khoản
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-info-circle"></i> Thông tin hệ thống</h5>
+                </div>
+                <div class="ibox-content">
+                    <dl class="dl-horizontal">
+                        @if (user != null)
+                        {
+                            <dt>Mã người dùng:</dt>
+                            <dd><code>@user.Id</code></dd>
+
+                            <dt>Ngày tạo:</dt>
+                            <dd>@user.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                            <dt>Đăng nhập lần cuối:</dt>
+                            <dd>
+                                @if (user.LastLoginDate.HasValue)
+                                {
+                                    @user.LastLoginDate.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa đăng nhập lần nào</span>
+                                }
+                            </dd>
+
+                            <dt>Email đã xác thực:</dt>
+                            <dd>
+                                @if (user.EmailConfirmed)
+                                {
+                                    <span class="label label-success"><i class="fa fa-check"></i> Đã xác thực</span>
+                                }
+                                else
+                                {
+                                    <span class="label label-warning"><i class="fa fa-exclamation"></i> Chưa xác thực</span>
+                                }
+                            </dd>
+
+                            <dt>SĐT đã xác thực:</dt>
+                            <dd>
+                                @if (user.PhoneNumberConfirmed)
+                                {
+                                    <span class="label label-success"><i class="fa fa-check"></i> Đã xác thực</span>
+                                }
+                                else
+                                {
+                                    <span class="label label-default"><i class="fa fa-times"></i> Chưa xác thực</span>
+                                }
+                            </dd>
+                        }
+                    </dl>
+                    <div class="m-t-md">
+                        <a href="@Url.Action("Details", new { id = Model.AccountId })" class="btn btn-info">
+                            <i class="fa fa-eye"></i> Xem chi tiết đầy đủ
+                        </a>
+                        <a href="@Url.Action("Activity", new { accountId = Model.AccountId })" class="btn btn-white">
+                            <i class="fa fa-history"></i> Xem lịch sử hoạt động
+                        </a>
+                        <a href="@Url.Action("ManageRoles", new { id = Model.AccountId })" class="btn btn-white">
+                            <i class="fa fa-users"></i> Quản lý phân quyền
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        function toggleStatus(userId, newStatus) {
+            var message = newStatus ? 'Bạn có chắc muốn KÍCH HOẠT tài khoản này?' : 'Bạn có chắc muốn KHÓA tài khoản này?';
+
+            if (confirm(message)) {
+                $.ajax({
+                    url: '@Url.Action("ToggleStatus")',
+                    type: 'POST',
+                    data: { id: userId },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Đã xảy ra lỗi khi thay đổi trạng thái.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+@section pluginsStyles {
+    <style>
+        .dl-horizontal dt {
+            width: 180px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .dl-horizontal dd {
+            margin-left: 200px;
+        }
+
+        .hr-line-dashed {
+            border-top: 1px dashed #e7eaec;
+            color: #ffffff;
+            background-color: #ffffff;
+            height: 1px;
+            margin: 20px 0;
+        }
+    </style>
+}
+

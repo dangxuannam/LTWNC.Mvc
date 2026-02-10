@@ -1,0 +1,42 @@
+﻿@model ProductSearchModel 
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5> Tìm kiếm </h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chervon-down"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content p-sm">
+                <div class="row">
+                    <div class="col-md-12 m-b-sm">
+
+                        @using (Html.BeginForm("Index", "Product", FormMethod.Get,
+                            new { @class ="form-horizontal", role = "search", id = "searchSupplier"}))
+            {
+                <div class="input-group">
+                    @(Html.TextBox("Keyword", null, new
+                {
+                    placeholder = " Nhập từ khóa hoặc nội dung cần tìm",
+                    @class = "input-sm form-control"
+                }))
+
+                    @Html.Hidden("PageSize",null, new {id = "pageSize" }) 
+
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-sm btn-primary">Tìm kiếm</button>
+                        @(Html.ActionLink("Bỏ lọc","Index", null,
+                                new { @class = "btn btn-sm btn-primary"}))
+                    </span>
+                </div>
+            }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

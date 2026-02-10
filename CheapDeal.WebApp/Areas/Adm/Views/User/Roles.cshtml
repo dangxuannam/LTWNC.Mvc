@@ -1,0 +1,117 @@
+﻿@model List<CheapDeal.WebApp.Models.UserRoleViewModel>
+@{
+    ViewBag.Title = "Quản lý phân quyền";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Quản lý phân quyền</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home", new { Area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index")">Người dùng</a></li>
+            <li class="active"><strong>Phân quyền</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Danh sách người dùng và vai trò</h5>
+                </div>
+                <div class="ibox-content">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissable">
+                            <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button>
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("Roles", "User", FormMethod.Get, new { @class = "form-horizontal" }))
+                    {
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Lọc theo vai trò</label>
+                            <div class="col-sm-8">
+                                @Html.DropDownList("role", (SelectList)ViewBag.Roles, "-- Tất cả --", new { @class = "form-control" })
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fa fa-filter"></i> Lọc
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var user in Model)
+                                    {
+                                        <tr>
+                                            <td>@user.UserName</td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                @if (user.Roles != null && user.Roles.Any())
+                                                {
+                                                    foreach (var role in user.Roles)
+                                                    {
+                                                        <span class="label label-primary m-r-xs">@role</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa có vai trò</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("ManageRoles", new { id = user.AccountId })"
+                                                   class="btn btn-white btn-xs">
+                                                    <i class="fa fa-edit"></i> Phân quyền
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center">Không có dữ liệu</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <div class="text-center">
+                            <ul class="pagination">
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="@(i == ViewBag.Page ? "active" : "")">
+                                        <a href="@Url.Action("Roles", new { role = ViewBag.Role, page = i })">@i</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

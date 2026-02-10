@@ -1,0 +1,252 @@
+﻿<style>
+    #side-menu {
+        width: 100%;
+    }
+
+        #side-menu > li {
+            border-bottom: 1px solid #293846;
+            position: relative;
+        }
+
+            #side-menu > li > a {
+                color: #a7b1c2;
+                padding: 14px 20px;
+                display: block;
+                text-decoration: none;
+                border-left: 4px solid transparent;
+                transition: all 0.3s;
+                position: relative;
+            }
+
+                #side-menu > li > a:hover {
+                    color: #fff;
+                    background: #293846;
+                    border-left: 4px solid #19aa8d;
+                }
+
+                #side-menu > li > a i {
+                    margin-right: 10px;
+                    width: 20px;
+                    text-align: center;
+                }
+
+                #side-menu > li > a .arrow {
+                    position: absolute;
+                    right: 20px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 12px;
+                    color: #a7b1c2;
+                    transition: transform 0.3s;
+                }
+
+            #side-menu > li:hover > a .arrow {
+                transform: translateY(-50%) rotate(90deg);
+                color: #19aa8d;
+            }
+    .nav-second-level {
+        background: #1c2b36;
+        padding-left: 0;
+        display: none;
+        list-style: none;
+        position: relative;
+        width: 100%;
+        z-index: 1;
+    }
+
+    #side-menu > li:hover > .nav-second-level {
+        display: block;
+    }
+
+    .nav-second-level li {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        border-top: 1px solid #253444;
+    }
+
+        .nav-second-level li:first-child {
+            border-top: none;
+        }
+
+        .nav-second-level li a {
+            color: #a7b1c2;
+            padding: 10px 15px 10px 45px;
+            display: block;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+            .nav-second-level li a:before {
+                content: "›";
+                position: absolute;
+                left: 30px;
+                color: #a7b1c2;
+            }
+
+            .nav-second-level li a:hover {
+                color: #fff;
+                background: #253444;
+                padding-left: 50px;
+            }
+
+                .nav-second-level li a:hover:before {
+                    color: #19aa8d;
+                }
+
+    #side-menu > li {
+        transition: all 0.3s;
+    }
+
+    .nav-second-level {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+        .nav-second-level::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .nav-second-level::-webkit-scrollbar-thumb {
+            background: #19aa8d;
+            border-radius: 3px;
+        }
+</style>
+
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul id="side-menu" class="nav">
+            <li class="nav-header">
+                @Html.Partial("_ProfilePartial")
+            </li>
+
+
+            <li>
+                <a href="@Url.Action("Index", "Dashboard")">
+                    <i class="fa fa-th-large"></i>
+                    <span class="nav-label">Trang chủ</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="fa fa-sitemap"></i>
+                    <span class="nav-label">Loại mặt hàng</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Category")">Xem danh mục</a></li>
+                    <li><a href="@Url.Action("Create", "Category")">Tạo danh mục mới</a></li>
+                    <li><a href="@Url.Action("List", "Category")">Thống kê SL hàng</a></li>
+                </ul>
+            </li>
+
+            <!-- Nhà cung cấp -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-university"></i>
+                    <span class="nav-label">Nhà cung cấp</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Supplier")">Xem nhà cung cấp</a></li>
+                    <li><a href="@Url.Action("Create", "Supplier")">Thêm nhà cung cấp</a></li>
+                </ul>
+            </li>
+
+            <!-- Quản lý Sản phẩm -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-gift"></i>
+                    <span class="nav-label">Quản lý Sản phẩm</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Product")">Xem danh mục</a></li>
+                    <li><a href="@Url.Action("Create", "Product")">Thêm sản phẩm</a></li>
+                    <li><a href="@Url.Action("OutOfStock", "Product")">Sản phẩm hết hàng</a></li>
+                </ul>
+            </li>
+
+            <!-- Công ty giao hàng -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-truck"></i>
+                    <span class="nav-label">Công ty giao hàng</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Shipper")">Danh sách công ty</a></li>
+                    <li><a href="@Url.Action("Create", "Shipper")">Thêm công ty mới</a></li>
+                    <li><a href="@Url.Action("Rates", "Shipper")">Bảng giá vận chuyển</a></li>
+                    <li><a href="@Url.Action("TrackOrders", "Shipper")">Theo dõi đơn vận</a></li>
+                    <li><a href="@Url.Action("PerformanceReport", "Shipper")">Báo cáo hiệu suất</a></li>
+                </ul>
+            </li>
+
+            <!-- Hình ảnh sản phẩm -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-image"></i>
+                    <span class="nav-label">Hình ảnh sản phẩm</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Picture")">Xem hình ảnh</a></li>
+                    <li><a href="@Url.Action("Upload", "Picture")">Upload hình ảnh</a></li>
+                    <li><a href="@Url.Action("Library", "Picture")">Thư viện ảnh</a></li>
+
+                </ul>
+            </li>
+
+            <!-- Quản lý Người dùng -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-users"></i>
+                    <span class="nav-label">Quản lý Người dùng</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "User")">Danh sách người dùng</a></li>
+                    <li><a href="@Url.Action("Create", "User")">Thêm người dùng mới</a></li>
+                    <li><a href="@Url.Action("Admin", "User")">Quản trị viên</a></li>
+                    <li><a href="@Url.Action("Roles", "User")">Phân quyền</a></li>
+                    <li><a href="@Url.Action("Activity", "User")">Nhật ký hoạt động</a></li>
+                </ul>
+            </li>
+
+            <!-- Đơn đặt hàng -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span class="nav-label">Đơn đặt hàng</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Index", "Order")">Xem đơn hàng</a></li>
+                    <li><a href="@Url.Action("Unship", "Order")">Đơn hàng chưa giao</a></li>
+                    <li><a href="@Url.Action("Shipping", "Order")">Đơn hàng đang giao</a></li>
+                    <li><a href="@Url.Action("Overview", "Order")">Thống kê doanh thu</a></li>
+                </ul>
+            </li>
+
+            <!-- Cài đặt hệ thống -->
+            <li>
+                <a href="#">
+                    <i class="fa fa-credit-card fa-fw"></i>
+                        <span class="nav-label">Thanh toán</span>
+                        <span class="fa arrow"></span>
+</a>
+                <ul class="nav nav-second-level">
+                    <li><a href="@Url.Action("Payment", "Payment")">Các cổng thanh toán</a></li>
+                    <li><a href="@Url.Action("History", "Payment")">Lịch sử thanh toán</a></li>
+                    <li><a href="@Url.Action("Report", "Payment")">Báo cáo tài chính</a></li>
+                </ul>
+            </li>
+
+
+        </ul>
+    </div>
+</nav>

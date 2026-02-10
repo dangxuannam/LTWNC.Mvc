@@ -1,0 +1,77 @@
+﻿@model CheapDeal.WebApp.Models.ManageUserRolesViewModel
+@{
+    ViewBag.Title = "Phân quyền người dùng";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Phân quyền người dùng</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home", new { Area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Roles")">Phân quyền</a></li>
+            <li class="active"><strong>Cập nhật</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Phân quyền cho: @Model.UserName (@Model.Email)</h5>
+                </div>
+                <div class="ibox-content">
+                    @using (Html.BeginForm("ManageRoles", "User", FormMethod.Post, new { @class = "form-horizontal" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.AccountId)
+                        @Html.HiddenFor(m => m.UserName)
+                        @Html.HiddenFor(m => m.Email)
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Chọn vai trò</label>
+                            <div class="col-sm-10">
+                                <div class="i-checks">
+                                    @for (int i = 0; i < Model.Roles.Count; i++)
+                                    {
+                                        @Html.HiddenFor(m => m.Roles[i].RoleName)
+                                        @Html.HiddenFor(m => m.Roles[i].RoleDisplayName)
+
+                                        <div class="checkbox">
+                                            <label>
+                                                @Html.CheckBoxFor(m => m.Roles[i].IsAssigned)
+                                                <span><strong>@Model.Roles[i].RoleDisplayName</strong> (@Model.Roles[i].RoleName)</span>
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                <span class="help-block m-b-none">
+                                    <i class="fa fa-info-circle"></i>
+                                    Có thể chọn nhiều vai trò cho một người dùng
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="hr-line-dashed"></div>
+
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <a href="@Url.Action("Roles")" class="btn btn-white btn-sm">
+                                    <i class="fa fa-times"></i> Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fa fa-check"></i> Cập nhật
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,42 @@
+﻿@model  Supplier
+
+@{ ViewBag.Title = "Quản lý nhà cung cấp ";}
+
+@section pluginsStyles {
+    <link href="~/Content/plugins/iCheck/custom.css" rel= "stylesheet" />
+    }
+<div class="row">
+    <div class="col-md-12">
+        <div class=" ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Thêm nhà cung cấp mới </h5>
+            </div>
+
+            <div class="ibox-content p-sm">
+                @using(Html.BeginForm()) {
+                    @Html.AntiForgeryToken()
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        @Html.Partial("_CreateOrEdit", Model)
+                        @Html.Partial("_Toolbar")
+                    </div>
+                }
+            </div>   
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/admjqueryval")
+
+    <script src="~/Scripts/plugins/iCheck/icheck.min.js"></script> 
+
+    <script type ="text/javascript">
+        $(function () {
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green'
+            });
+        });
+    </script>
+    }

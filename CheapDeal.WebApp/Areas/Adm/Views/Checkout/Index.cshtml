@@ -1,0 +1,326 @@
+﻿@model List<CheapDeal.WebApp.Models.CartItem>
+@{
+    ViewBag.Title = "Thanh toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>Thanh toán đơn hàng</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="row">
+        <!-- Giỏ hàng -->
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Chi tiết đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Giảm giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@Url.Content(item.ImageUrl)" alt="@item.ProductName" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        @item.ProductName
+                                    </td>
+                                    <td>@item.Price.ToString("N0") đ</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@((item.Discount * 100).ToString("0"))%</td>
+                                    <td>@((item.Quantity * item.Price * (1 - item.Discount)).ToString("N0")) đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-right">Tổng tiền:</th>
+                                <th>@ViewBag.TotalAmount.ToString("N0") đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form thanh toán -->
+        <div class="col-md-4">
+            @using (Html.BeginForm("PlaceOrder", "Checkout", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Thông tin nhận hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Tên người nhận <span class="text-danger">*</span></label>
+                            <input type="text" name="shipName" class="form-control"
+                                   value="@ViewBag.Customer?.UserName" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="tel" name="shipTel" class="form-control"
+                                   value="@ViewBag.Customer?.PhoneNumber" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Địa chỉ nhận hàng <span class="text-danger">*</span></label>
+                            <textarea name="shipAddress" class="form-control" rows="3" required>@ViewBag.Customer?.Profile?.Address</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Ghi chú thêm..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Phương thức thanh toán</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Hidden radio buttons for form submission -->
+                        <input type="radio" name="paymentMethod" value="MoMo" id="radio-momo" style="display: none;" />
+                        <input type="radio" name="paymentMethod" value="VNPay" id="radio-vnpay" style="display: none;" />
+                        <input type="radio" name="paymentMethod" value="COD" id="radio-cod" style="display: none;" checked />
+                        <input type="radio" name="paymentMethod" value="BankTransfer" id="radio-bank" style="display: none;" />
+
+                        <!-- MoMo -->
+                        <div class="payment-method-item" data-method="MoMo">
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3 payment-option"
+                                 style="background-color: #f8f9fa; cursor: pointer;">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://developers.momo.vn/v3/img/logo.svg" alt="MoMo" style="width: 40px; height: 40px; margin-right: 10px;" />
+                                    <div>
+                                        <strong>Ví điện tử MoMo</strong>
+                                        <small class="d-block text-muted">Thanh toán qua ví MoMo</small>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input payment-toggle" id="toggle-momo" data-method="MoMo">
+                                    <label class="custom-control-label" for="toggle-momo"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VNPay -->
+                        <div class="payment-method-item" data-method="VNPay">
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3 payment-option"
+                                 style="background-color: #f8f9fa; cursor: pointer;">
+                                <div class="d-flex align-items-center">
+                                    <img src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="VNPay" style="width: 40px; height: 40px; margin-right: 10px;" />
+                                    <div>
+                                        <strong>VNPay</strong>
+                                        <small class="d-block text-muted">Thanh toán qua VNPay</small>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input payment-toggle" id="toggle-vnpay" data-method="VNPay">
+                                    <label class="custom-control-label" for="toggle-vnpay"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- COD -->
+                        <div class="payment-method-item" data-method="COD">
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3 payment-option"
+                                 style="background-color: #e7f3ff; cursor: pointer; border-color: #007bff !important;">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-money-bill-wave" style="font-size: 40px; margin-right: 10px; color: #28a745;"></i>
+                                    <div>
+                                        <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                        <small class="d-block text-muted">Thanh toán bằng tiền mặt</small>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input payment-toggle" id="toggle-cod" data-method="COD" checked>
+                                    <label class="custom-control-label" for="toggle-cod"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer -->
+                        <div class="payment-method-item" data-method="BankTransfer">
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3 payment-option"
+                                 style="background-color: #f8f9fa; cursor: pointer;">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-university" style="font-size: 40px; margin-right: 10px; color: #007bff;"></i>
+                                    <div>
+                                        <strong>Chuyển khoản ngân hàng</strong>
+                                        <small class="d-block text-muted">Chuyển khoản qua ngân hàng</small>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input payment-toggle" id="toggle-bank" data-method="BankTransfer">
+                                    <label class="custom-control-label" for="toggle-bank"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">
+                    <i class="fas fa-check-circle"></i> Đặt hàng
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var paymentToggles = document.querySelectorAll('.payment-toggle');
+            var paymentOptions = document.querySelectorAll('.payment-option');
+
+            // Hàm chọn payment method
+            function selectPaymentMethod(method) {
+                console.log('Selecting payment method:', method);
+
+                paymentToggles.forEach(function (toggle) {
+                    if (toggle.dataset.method !== method) {
+                        toggle.checked = false;
+                    }
+                });
+                var selectedToggle = document.querySelector('.payment-toggle[data-method="' + method + '"]');
+                if (selectedToggle) {
+                    selectedToggle.checked = true;
+                }
+
+                var radioButton = document.getElementById('radio-' + method.toLowerCase());
+                if (radioButton) {
+                    radioButton.checked = true;
+                }
+
+                updateUI();
+            }
+            function updateUI() {
+                paymentOptions.forEach(function (option) {
+                    var method = option.closest('.payment-method-item').dataset.method;
+                    var toggle = document.querySelector('.payment-toggle[data-method="' + method + '"]');
+
+                    if (toggle && toggle.checked) {
+                        option.style.backgroundColor = '#e7f3ff';
+                        option.style.borderColor = '#007bff';
+                        option.style.boxShadow = '0 0 0 0.2rem rgba(0,123,255,.25)';
+                    } else {
+                        option.style.backgroundColor = '#f8f9fa';
+                        option.style.borderColor = '#dee2e6';
+                        option.style.boxShadow = 'none';
+                    }
+                });
+            }
+
+            paymentToggles.forEach(function (toggle) {
+                toggle.addEventListener('change', function (e) {
+                    e.stopPropagation();
+
+                    if (this.checked) {
+                        var method = this.dataset.method;
+                        selectPaymentMethod(method);
+                    } else {
+                        this.checked = true;
+                    }
+                });
+            });
+
+            paymentOptions.forEach(function (option) {
+                option.addEventListener('click', function (e) {
+
+                    if (e.target.classList.contains('custom-control-label')) {
+                        return;
+                    }
+
+                    var method = this.closest('.payment-method-item').dataset.method;
+                    selectPaymentMethod(method);
+                });
+            });
+
+            updateUI();
+
+            var form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    var selectedMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+                    if (!selectedMethod) {
+                        e.preventDefault();
+                        alert('Vui lòng chọn phương thức thanh toán!');
+                        return false;
+                    }
+
+                    console.log('Submitting with payment method:', selectedMethod.value);
+
+                    var submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+
+    <style>
+        .custom-switch .custom-control-label::before {
+            width: 3.5rem;
+            height: 2rem;
+            border-radius: 2rem;
+            background-color: #dee2e6;
+        }
+
+        .custom-switch .custom-control-label::after {
+            width: calc(2rem - 4px);
+            height: calc(2rem - 4px);
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+            transform: translateX(1.5rem);
+        }
+
+        .payment-option:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            transform: translateY(-2px);
+        }
+
+        .payment-option {
+            transition: all 0.3s ease !important;
+        }
+
+        .custom-control-label::before,
+        .custom-control-label::after {
+            transition: all 0.3s ease;
+        }
+
+        .custom-control {
+            z-index: 10;
+            position: relative;
+        }
+    </style>
+}

@@ -1,0 +1,88 @@
+﻿	@model ProductCreateViewModel
+@{
+    ViewBag.Title = "Quản lý hàng hóa";
+}
+
+@section pluginsStyles
+{
+    <link href="~/Content/plugins/iCheck/custom.css" rel="stylesheet" />
+    <link href="~/Content/plugins/chosen/chosen.css" rel="stylesheet" />
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Thêm mặt hàng mới</h5>
+            </div>
+
+            <div class="ibox-content p-sm">
+                @using (Html.BeginForm("Create", "Product",
+                            FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-horizontal">
+                        @(Html.ValidationSummary(true, "",
+                         new {@class = "text-danger"}))
+
+                        @Html.Partial("_CreateOrEdit", Model)
+                        @Html.Partial("_Toolbar");
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section pluginScripts
+{
+    <script src="~/Scripts/plugins/iCheck/icheck.min.js"></script>
+    <script src="~/Scripts/plugins/chosen/chosen.jquery.js"></script>
+    <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/admjqueryval")
+
+    <script type="text/javascript">
+		$(document).ready(function () {
+			var lastNameValue = "";
+
+			$('.i-checks').iCheck({
+				checkboxClass: 'icheckbox_square-green'
+			});
+
+			$('#Name').on('change keyup paste mouseup', function () {
+				var prodName = $('#Name').val();
+				if (prodName != lastNameValue) {
+					$('#Alias').val(convertToUnsignChar(prodName));
+					lastNameValue = prodName;
+				}
+			});
+
+			tinymce.init({
+				selector: "textarea#Description",
+				theme: "modern",
+				height: 500,
+				plugins: [
+					 "advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker",
+					 "searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
+					 "save table contextmenu directionality emoticons template paste textcolor"
+				],
+				toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons",
+				style_formats: [
+					 { title: 'Bold text', inline: 'b' },
+					 { title: 'Red text', inline: 'span', styles: { color: '#ff0000' } },
+					 { title: 'Red header', block: 'h1', styles: { color: '#ff0000' } },
+					 { title: 'Example 1', inline: 'span', classes: 'example1' },
+					 { title: 'Example 2', inline: 'span', classes: 'example2' },
+					 { title: 'Table styles' },
+					 { title: 'Table row 1', selector: 'tr', classes: 'tablerow1' }
+				]
+			});
+
+			$('.chosen-select').chosen({ width: "100%" });
+		});
+    </script>
+}

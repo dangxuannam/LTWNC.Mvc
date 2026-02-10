@@ -1,0 +1,71 @@
+﻿@model PagedList.IPagedList<Product>
+
+@{
+    ViewBag.Title = "Quản lý hàng hóa";
+}
+
+@section pluginsStyles {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
+    <link href="~/Content/AdmGrid.css" rel="stylesheet" />
+}
+
+@Html.Partial("_SearchForm", (ProductSearchModel)ViewBag.SearchModel)
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Danh sách sản phẩm </h5>
+                <div class="ibox-tools">
+                    @(Html.Bootstrap()
+                        .ActionLink("Thêm sản phẩm mới", "Create")
+                        .Class("btn btn-primary btn-xs")
+                        .PrependIcon("fa fa-plus"))
+                </div>
+            </div>
+            <div class="ibox-content p-sm" id="productList">
+                @Html.Partial("_ProductList", Model)
+            </div>
+        </div>
+        @foreach (var item in Model)
+        {
+            <div class="product-item">
+
+                <button class="btn btn-primary btn-add-to-cart" data-product-id="@item.ProductId">
+                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#productList tr').on("click", "[data-toggle-state=true]", function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                var url = $this.attr('data-url');
+                var args = $this.attr('data-args');
+
+                $.post(url,
+                    { "args": args },
+                    function (data) {
+                        if (data.Result) {
+
+                            $this.attr('data-args', data.Message);
+                            $this.toggleClass('true');
+                        } else {
+                            alert(data.Message);
+                        }
+                    }
+                );
+            });
+            $('#pageSelect').change(function () {
+                $('#pageSize').val($(this).val());
+                $('#searchSupplier').submit();
+            });
+        });
+    </script>
+}

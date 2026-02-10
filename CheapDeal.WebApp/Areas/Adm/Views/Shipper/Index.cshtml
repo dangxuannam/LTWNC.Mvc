@@ -1,0 +1,308 @@
+﻿@model IEnumerable<Shipper>
+
+@{
+    ViewBag.Title = "Quản lý các đơn vị giao hàng";
+}
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Danh sách đơn vị vận chuyển hàng</h5>
+                <div class="ibox-tools">
+                    @(Html.Bootstrap()
+                        .ActionLink("Thêm công ty mới","Create")
+                        .Class("btn btn-primary btn-sm ")
+                        .PrependIcon("fa fa-plus"))
+                    <button id="delete-selected" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Xóa selected</button>
+                </div>
+            </div>
+
+            <div class="ibox-content p-sm">
+                <!-- Phần hiển thị danh sách công ty vận chuyển -->
+                <table class="table table-striped table-bordered table-hover" id="pagedtable">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Tên công ty vận chuyển</th>
+                            <th>Số điện thoại</th>
+                            <th class="hidden-sm hidden-xs">Địa chỉ văn phòng</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ShipperID)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.CompanyName)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Phone)
+                                </td>
+
+                                <td class="hidden-sm hidden-xs">
+                                    @Html.DisplayFor(modelItem => item.Address)
+                                </td>
+                                <td>
+                                    @(Html.Bootstrap()
+                            .ActionLink("", "Edit")
+                            .RouteValues(new { id = item.ShipperID })
+                            .Title("Cập nhật")
+                            .AppendIcon("fa fa-pencil"))
+                                    @(Html.Bootstrap()
+                            .ActionLink("", "Delete")
+                            .Class("dz-remove")
+                            .RouteValues(new { id = item.ShipperID })
+                            .AppendIcon("fa fa-trash-o")
+                             .Title("Xóa"))
+
+                                    <a href="javascript:void(0);" class="set-transit" data-id="@item.ShipperID" title="Chuyển trạng thái đang vận chuyển cho các đơn hàng"><i class="fa fa-truck"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+@section pluginsStyles
+{
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.11/css/dataTables.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap.min.css" />
+}
+
+@section pluginScripts
+{
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.11/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap.min.js"></script>
+}
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var pagedTable = $('#pagedtable').DataTable({
+                "responsive": true,
+                "order": [[1, 'asc']],
+                "pageLength": 10,
+                "paging": true,
+                "language": {
+                    "paginate": { "first": "Đầu", "previous": "Trước", "next": "Tiếp", "last": "Cuối" },
+                    "info": "Hiển thị _START_ đến _END_ trong số _TOTAL_ mẫu tin",
+                    "search": "Tìm theo từ khóa : ",
+                    "lengthMenu": "Hiển thị _MENU_ mẫu tin"
+                },
+                "dom": '<"row"<"col-sm-6"l><"col-sm-6 text-right"B>>frtip',
+                "buttons": [
+                    { extend: 'copy', className: 'btn btn-default', text: 'Copy' },
+                    { extend: 'csv', className: 'btn btn-default', text: 'CSV' },
+                    { extend: 'excel', className: 'btn btn-default', text: 'Excel' },
+                    { extend: 'pdf', className: 'btn btn-default', text: 'PDF' },
+                    { extend: 'print', className: 'btn btn-default', text: 'Print' }
+                ]
+            });
+
+
+            console.log('DataTables info:', pagedTable.page.info()); 
+
+            $('#pagedtable tbody').on('click', 'tr', function () {
+                $(this).toggleClass('selected');
+            });
+
+            $('#delete-selected').on('click', function () {
+                var selectedRows = pagedTable.rows('.selected').data();
+                if (selectedRows.length === 0) {
+                    alert('Vui lòng chọn ít nhất một dòng để xóa.');
+                    return;
+                }
+
+                if (confirm('Bạn có chắc chắn muốn xóa các công ty đã chọn?')) {
+                    var ids = [];
+                    selectedRows.each(function () {
+                        ids.push(parseInt(this[0])); 
+                    });
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("DeleteMultiple", "Shipper")',
+                        data: { ids: ids },
+                        success: function (response) {
+                            if (response.success) {
+                                pagedTable.rows('.selected').remove().draw();
+                            } else if (response.hasOrders) {
+                                if (confirm("Một số công ty đang có đơn hàng được giao. Nếu xóa, các đơn hàng sẽ được đặt ShipVia về null. Bạn vẫn muốn xóa?")) {
+                                    $.ajax({
+                                        type: "POST",
+                                        url: '@Url.Action("DeleteMultiple", "Shipper")',
+                                        data: { ids: ids, force: true },
+                                        success: function (resp) {
+                                            if (resp.success) {
+                                                pagedTable.rows('.selected').remove().draw();
+                                            } else {
+                                                alert(resp.message || 'Không thể xóa.');
+                                            }
+                                        },
+                                        error: function (xhr) {
+                                            alert('Lỗi: ' + xhr.responseText);
+                                        }
+                                    });
+                                }
+                            } else {
+                                alert(response.message || 'Không thể xóa.');
+                            }
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+
+            $('#pagedtable tbody').on('click', 'a.dz-remove', function (e) {
+                e.preventDefault();
+                var btn = $(this);
+
+                if (confirm("Bạn có thực sự muốn xóa công ty này?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: btn.attr('href'),
+                        success: function (response) {
+                            if (response.success) {
+                                var row = btn.closest('tr').get(0);
+                                pagedTable.row(row).remove().draw();
+                            } else if (response.hasOrders) {
+                                if (confirm("Công ty này đang có đơn hàng được giao. Nếu xóa, các đơn hàng sẽ được đặt ShipVia về null. Bạn vẫn muốn xóa?")) {
+                                    $.ajax({
+                                        type: "POST",
+                                        url: btn.attr('href') + "?force=true",
+                                        success: function (resp) {
+                                            if (resp.success) {
+                                                var row = btn.closest('tr').get(0);
+                                                pagedTable.row(row).remove().draw();
+                                            } else {
+                                                alert(resp.message || 'Không thể xóa công ty này.');
+                                            }
+                                        },
+                                        error: function (xhr) {
+                                            alert('Lỗi: ' + xhr.responseText);
+                                        }
+                                    });
+                                }
+                            } else {
+                                alert(response.message || 'Không thể xóa công ty này.');
+                            }
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+
+            $('#pagedtable tbody').on('click', 'a.set-transit', function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var id = btn.data('id');
+                var url = '@Url.Action("SetInTransit", "Shipper")';
+
+                if (confirm("Bạn có muốn chuyển trạng thái sang đang vận chuyển cho các đơn hàng của công ty này?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                alert('Đã chuyển trạng thái thành công.');
+                            } else {
+                                alert(response.message || 'Không thể chuyển trạng thái.');
+                            }
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+<style>
+    body.DTTT_Print {
+        background: #fff;
+    }
+
+    .DTTT_Print #page-wrapper {
+        margin: 0;
+        background: #fff;
+    }
+
+    button.dt-button, div.dt-button, a.dt-button {
+        border: 1px solid #e7eaec;
+        background: #fff;
+        color: #676a6c;
+        -webkit-box-shadow: none;
+        -ms-box-shadow: none;
+        box-shadow: none;
+        padding: 6px 8px;
+    }
+
+        button.dt-button:hover, div.dt-button:hover, a.dt-button:hover {
+            border: 1px solid #d2d2d2;
+            background: #fff;
+            color: #676a6c;
+            -webkit-box-shadow: none;
+            -ms-box-shadow: none;
+            box-shadow: none;
+            padding: 6px 8px;
+        }
+
+    .dataTables_filter label {
+        margin-right: 5px;
+    }
+
+    .dataTables_info {
+        text-align: left;
+    }
+
+    .ibox-content, .dataTables_wrapper, .dataTables_length, .dataTables_scroll, .dataTables_scrollHead, .dataTables_scrollBody, .table-responsive {
+        overflow: visible !important;
+    }
+
+    .paginate_button, .paginate_button a {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+
+    .dataTables_length {
+        margin-bottom: 15px;
+        padding-top: 10px;
+    }
+
+        .dataTables_length select {
+            height: 30px !important; 
+            padding: 5px 10px !important; 
+            font-size: 14px !important; 
+        }
+
+
+    tr.selected {
+        background-color: #acbad4 !important;
+    }
+</style>

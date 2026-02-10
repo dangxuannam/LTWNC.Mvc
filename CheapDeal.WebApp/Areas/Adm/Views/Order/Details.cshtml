@@ -1,0 +1,455 @@
+﻿@model CheapDeal.WebApp.Models.Order
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.OrderId;
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Chi tiết đơn hàng #@Model.OrderId</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index", "Order")">Đơn hàng</a></li>
+            <li class="active"><strong>Chi tiết</strong></li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+        <div class="title-action">
+            <a href="@Url.Action("Print", new { id = Model.OrderId })" class="btn btn-primary" target="_blank" style="margin-top: 30px;">
+                <i class="fa fa-print"></i> In hóa đơn
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Thông tin đơn hàng</h5>
+                    <div class="ibox-tools">
+                        @switch (Model.Status)
+                        {
+                            case CheapDeal.WebApp.Models.OrderStatus.New:
+                                <span class="label label-info label-lg">MỚI</span>
+                                break;
+                            case CheapDeal.WebApp.Models.OrderStatus.Approved:
+                                <span class="label label-primary label-lg">ĐÃ XÁC NHẬN</span>
+                                break;
+                            case CheapDeal.WebApp.Models.OrderStatus.Shipping:
+                                <span class="label label-warning label-lg">ĐANG GIAO</span>
+                                break;
+                            case CheapDeal.WebApp.Models.OrderStatus.Success:
+                                <span class="label label-success label-lg">THÀNH CÔNG</span>
+                                break;
+                            case CheapDeal.WebApp.Models.OrderStatus.Cancelled:
+                                <span class="label label-danger label-lg">ĐÃ HỦY</span>
+                                break;
+                            case CheapDeal.WebApp.Models.OrderStatus.Returned:
+                                <span class="label label-default label-lg">ĐÃ TRẢ HÀNG</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="m-t-none">Thông tin khách hàng</h4>
+                            <address>
+                                <strong>
+                                    @if (Model.Customer != null)
+                                    {
+                                        @(Model.Customer.Profile?.FullName ?? Model.Customer.Email)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Khách vãng lai</span>
+                                    }
+                                </strong><br>
+                                @if (Model.Customer != null)
+                                {
+                                    <span>Email: @Model.Customer.Email</span><br>
+                                    if (!string.IsNullOrEmpty(Model.Customer.PhoneNumber))
+                                    {
+                                        <span>SĐT: @Model.Customer.PhoneNumber</span><br>
+                                    }
+                                }
+                            </address>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <h4>Thông tin đơn hàng</h4>
+                            <p class="m-t-sm">
+                                <strong>Mã đơn hàng:</strong> #@Model.OrderId<br>
+                                <strong>Ngày đặt:</strong> @(Model.OrderDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")<br>
+                                <strong>Ngày yêu cầu giao:</strong> @(Model.RequiredDate?.ToString("dd/MM/yyyy") ?? "N/A")<br>
+                                @if (Model.ShipDate.HasValue)
+                                {
+                                    <strong>Ngày giao thực tế:</strong> @Model.ShipDate.Value.ToString("dd/MM/yyyy")<br>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Thông tin người nhận</h4>
+                            <address>
+                                <strong>@Model.ShipName</strong><br>
+                                Địa chỉ: @Model.ShipAddress<br>
+                                Số điện thoại: @Model.ShipTel
+                            </address>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <h4>Thông tin vận chuyển</h4>
+                            <p>
+                                @if (Model.Shipper != null)
+                                {
+                                    <strong>Đơn vị vận chuyển:</strong> @Model.Shipper.CompanyName<br>
+                                    <strong>SĐT đơn vị VC:</strong> @Model.Shipper.Phone<br>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa chọn đơn vị vận chuyển</span><br>
+                                }
+                                <strong>Phí vận chuyển:</strong> @Model.Freight.ToString("N0") đ
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="hr-line-dashed"></div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4>Ghi chú</h4>
+                                <p class="text-muted">@Model.Notes</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Chi tiết sản phẩm</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th>Chiết khấu</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                                {
+                                    int stt = 1;
+                                    foreach (var item in Model.OrderDetails)
+                                    {
+                                        <tr>
+                                            <td>@stt</td>
+                                            <td>
+                                                <strong>@item.Product.Name</strong>
+                                                @if (!string.IsNullOrEmpty(item.Notes))
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">Ghi chú: @item.Notes</small>
+                                                }
+                                            </td>
+                                            <td>@item.Price.ToString("N0") đ</td>
+                                            <td><strong>@item.Quantity</strong></td>
+                                            <td>@((item.Discount * 100).ToString("0"))%</td>
+                                            <td><strong class="text-navy">@item.Total.ToString("N0") đ</strong></td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" class="text-right"><strong>Tạm tính:</strong></td>
+                                    <td>
+                                        <strong>
+                                            @if (Model.OrderDetails != null)
+                                            {
+                                                @Model.OrderDetails.Sum(d => d.Total).ToString("N0")
+                                            }
+                                            else
+                                            {
+                                                @Model.TotalPrice.ToString("N0")
+                                            }
+                                            đ
+                                        </strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-right"><strong>Phí vận chuyển:</strong></td>
+                                    <td><strong>@Model.Freight.ToString("N0") đ</strong></td>
+                                </tr>
+                                <tr class="text-navy">
+                                    <td colspan="5" class="text-right"><h4><strong>TỔNG CỘNG:</strong></h4></td>
+                                    <td><h4><strong>@Model.TotalPrice.ToString("N0") đ</strong></h4></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @if (Model.Employee != null)
+            {
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>Nhân viên xử lý</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <p>
+                            <strong>Họ tên:</strong> @(Model.Employee.Profile?.FullName ?? Model.Employee.Email)<br>
+                            <strong>Email:</strong> @Model.Employee.Email<br>
+                            <strong>SĐT:</strong> @(Model.Employee.PhoneNumber ?? "N/A")
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            @if (Model.Status == CheapDeal.WebApp.Models.OrderStatus.New)
+                            {
+                                <button type="button" class="btn btn-success btn-lg" id="btnApprove" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-check"></i> Xác nhận đơn hàng
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg" id="btnCancel" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-times"></i> Hủy đơn hàng
+                                </button>
+                            }
+                            else if (Model.Status == CheapDeal.WebApp.Models.OrderStatus.Approved)
+                            {
+                                <button type="button" class="btn btn-warning btn-lg" id="btnShipping"
+                                        data-order-id="@Model.OrderId"
+                                        data-shipper-id="@(Model.ShipVia ?? 0)"
+                                        data-shipper-name="@(Model.Shipper?.CompanyName ?? "Chưa có")">
+                                    <i class="fa fa-truck"></i> Chuyển sang giao hàng
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg" id="btnCancel" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-times"></i> Hủy đơn hàng
+                                </button>
+                            }
+                            else if (Model.Status == CheapDeal.WebApp.Models.OrderStatus.Shipping)
+                            {
+                                <button type="button" class="btn btn-success btn-lg" id="btnSuccess" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-check-circle"></i> Đánh dấu đã giao thành công
+                                </button>
+                                <button type="button" class="btn btn-warning btn-lg" id="btnReturn" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-reply"></i> Trả hàng
+                                </button>
+                            }
+                            else if (Model.Status == CheapDeal.WebApp.Models.OrderStatus.Success)
+                            {
+                                <button type="button" class="btn btn-warning btn-lg" id="btnReturn" data-order-id="@Model.OrderId">
+                                    <i class="fa fa-reply"></i> Trả hàng
+                                </button>
+                            }
+
+                            @if (Model.Status == CheapDeal.WebApp.Models.OrderStatus.New ||
+                                 Model.Status == CheapDeal.WebApp.Models.OrderStatus.Approved)
+                            {
+                                <a href="@Url.Action("Edit", new { id = Model.OrderId })" class="btn btn-primary btn-lg">
+                                    <i class="fa fa-edit"></i> Chỉnh sửa đơn hàng
+                                </a>
+                            }
+
+                            <a href="@Url.Action("Index")" class="btn btn-white btn-lg">
+                                <i class="fa fa-arrow-left"></i> Quay lại danh sách
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateOrderStatus(orderId, newStatus, shipperId) {
+            // Tên trạng thái
+            var statusNames = {
+                0: 'Mới',
+                1: 'Đã hủy',
+                2: 'Đang giao hàng',
+                3: 'Đã trả hàng',
+                4: 'Đã xác nhận',
+                5: 'Thành công'
+            };
+
+            var confirmMsg = 'Bạn có chắc muốn chuyển trạng thái sang "' + statusNames[newStatus] + '"?';
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            if (typeof $.blockUI === 'function') {
+                $.blockUI({ message: '<h4><i class="fa fa-spinner fa-spin"></i> Đang xử lý...</h4>' });
+            }
+            $.ajax({
+                url: '@Url.Action("UpdateStatus", "Order")',
+                type: 'POST',
+                data: {
+                    orderId: orderId,
+                    newStatus: newStatus,
+                    shipperId: shipperId
+                },
+                success: function (response) {
+                    if (typeof $.unblockUI === 'function') {
+                        $.unblockUI();
+                    }
+
+                    if (response.success) {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success(response.message || 'Cập nhật trạng thái thành công!');
+                        } else {
+                            alert(response.message || 'Cập nhật trạng thái thành công!');
+                        }
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(response.message || 'Có lỗi xảy ra!');
+                        } else {
+                            alert('Lỗi: ' + (response.message || 'Có lỗi xảy ra!'));
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    if (typeof $.unblockUI === 'function') {
+                        $.unblockUI();
+                    }
+
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseText);
+
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Có lỗi xảy ra khi cập nhật trạng thái!');
+                    } else {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái!');
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+
+            $('#btnApprove').on('click', function() {
+                var orderId = $(this).data('order-id');
+                updateOrderStatus(orderId, 4, null); 
+            });
+
+            $('#btnShipping').on('click', function() {
+                var orderId = $(this).data('order-id');
+                var shipperId = $(this).data('shipper-id');
+                var shipperName = $(this).data('shipper-name');
+
+                if (!shipperId || shipperId == 0) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Vui lòng chỉnh sửa đơn hàng và chọn đơn vị vận chuyển trước khi chuyển sang giao hàng!');
+                    } else {
+                        alert('Vui lòng chỉnh sửa đơn hàng và chọn đơn vị vận chuyển trước khi chuyển sang giao hàng!');
+                    }
+                    return;
+                }
+
+                var confirmMsg = 'Bạn có chắc muốn chuyển đơn hàng sang trạng thái "Đang giao hàng"?\n\n' +
+                                'Đơn vị vận chuyển: ' + shipperName;
+
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+
+                updateOrderStatus(orderId, 2, shipperId); 
+            });
+
+            $('#btnSuccess').on('click', function() {
+                var orderId = $(this).data('order-id');
+                updateOrderStatus(orderId, 5, null); 
+            });
+
+            $('#btnCancel').on('click', function() {
+                var orderId = $(this).data('order-id');
+
+                var reason = prompt('Vui lòng nhập lý do hủy đơn:');
+                if (!reason || reason.trim() === '') {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning('Bạn cần nhập lý do hủy đơn!');
+                    }
+                    return;
+                }
+
+                updateOrderStatus(orderId, 1, null); 
+            });
+            $('#btnReturn').on('click', function() {
+                var orderId = $(this).data('order-id');
+
+                var reason = prompt('Vui lòng nhập lý do trả hàng:');
+                if (!reason || reason.trim() === '') {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning('Bạn cần nhập lý do trả hàng!');
+                    }
+                    return;
+                }
+
+                updateOrderStatus(orderId, 3, null); 
+            });
+
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('@TempData["Success"]');
+                }
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('@TempData["Error"]');
+                }
+                </text>
+            }
+        });
+    </script>
+}
+
+<style>
+    .label-lg {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .hr-line-dashed {
+        border-top: 1px dashed #e7eaec;
+        color: #ffffff;
+        background-color: #ffffff;
+        height: 1px;
+        margin: 20px 0;
+    }
+
+    .btn-lg {
+        margin: 5px;
+    }
+</style>

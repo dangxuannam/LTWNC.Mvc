@@ -1,0 +1,215 @@
+﻿@model IEnumerable<CheapDeal.WebApp.Models.Order>
+
+@{
+    ViewBag.Title = "Đơn hàng chưa giao";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Đơn hàng chưa giao</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index", "Order")">Đơn hàng</a></li>
+            <li class="active"><strong>Chưa giao</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Danh sách đơn hàng chưa giao (Tổng: @ViewBag.TotalOrders đơn)</h5>
+                    <div class="ibox-tools">
+                        <span class="label label-warning">Cần xử lý</span>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @using (Html.BeginForm("Unship", "Order", FormMethod.Get, new { @class = "form-horizontal" }))
+                            {
+                                <div class="form-group">
+                                    <div class="col-sm-9">
+                                        <input type="text" name="searchString" value="@ViewBag.SearchString"
+                                               class="form-control" placeholder="Tìm theo mã đơn hàng, tên người nhận, số điện thoại...">
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa fa-search"></i> Tìm kiếm
+                                        </button>
+                                        <a href="@Url.Action("Unship")" class="btn btn-white">
+                                            <i class="fa fa-refresh"></i> Làm mới
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Khách hàng</th>
+                                    <th>Người nhận</th>
+                                    <th>Địa chỉ giao hàng</th>
+                                    <th>SĐT</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="text-navy">#@item.OrderId</strong>
+                                            </td>
+                                            <td>
+                                                @(item.OrderDate?.ToString("dd/MM/yyyy") ?? "N/A")
+                                                <br />
+                                                <small class="text-muted">@(item.OrderDate?.ToString("HH:mm") ?? "")</small>
+                                            </td>
+                                            <td>
+                                                @if (item.Customer != null)
+                                                {
+                                                    <span>@(item.Customer.Profile?.FullName ?? item.Customer.Email)</span>
+                                                    <br />
+                                                    <small class="text-muted">@item.Customer.PhoneNumber</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Khách vãng lai</span>
+                                                }
+                                            </td>
+                                            <td><strong>@item.ShipName</strong></td>
+                                            <td>
+                                                <span class="text-muted">@item.ShipAddress</span>
+                                            </td>
+                                            <td>@item.ShipTel</td>
+                                            <td>
+                                                <strong class="text-danger">@item.TotalPrice.ToString("N0") đ</strong>
+                                            </td>
+                                            <td>
+                                                @if (item.Status == CheapDeal.WebApp.Models.OrderStatus.New)
+                                                {
+                                                    <span class="label label-info">Mới</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="label label-primary">Đã xác nhận</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="@Url.Action("Details", new { id = item.OrderId })"
+                                                       class="btn btn-white btn-sm" title="Xem chi tiết">
+                                                        <i class="fa fa-eye"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("Edit", new { id = item.OrderId })"
+                                                       class="btn btn-white btn-sm" title="Chỉnh sửa">
+                                                        <i class="fa fa-edit"></i>
+                                                    </a>
+                                                    @if (item.Status == CheapDeal.WebApp.Models.OrderStatus.New)
+                                                    {
+                                                        <button type="button" class="btn btn-primary btn-sm"
+                                                                onclick="updateStatus(@item.OrderId, @((int)CheapDeal.WebApp.Models.OrderStatus.Approved))"
+                                                                title="Xác nhận đơn">
+                                                            <i class="fa fa-check"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button" class="btn btn-warning btn-sm"
+                                                                onclick="updateStatus(@item.OrderId, @((int)CheapDeal.WebApp.Models.OrderStatus.Shipping))"
+                                                                title="Chuyển sang giao hàng">
+                                                            <i class="fa fa-truck"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="text-center">
+                                            <p class="text-muted">Không có đơn hàng chưa giao nào</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        <div class="text-center">
+                            <ul class="pagination">
+                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                {
+                                    <li class="@(i == ViewBag.CurrentPage ? "active" : "")">
+                                        <a href="@Url.Action("Unship", new { page = i, searchString = ViewBag.SearchString })">@i</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateStatus(orderId, newStatus) {
+            if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateStatus", "Order")',
+                type: 'POST',
+                data: { orderId: orderId, newStatus: newStatus },
+                success: function (result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Có lỗi xảy ra khi cập nhật trạng thái');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                toastr.success('@TempData["Success"]');
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                toastr.error('@TempData["Error"]');
+                </text>
+            }
+        });
+    </script>
+}

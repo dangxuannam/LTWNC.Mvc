@@ -1,0 +1,141 @@
+﻿<nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0;">
+    <div class="navbar-header">
+        <a class="navbar-minimalize minimalize-styl-2 btn btn-primary">
+            <i class="fa fa-bars"></i>
+        </a>
+        @using (Html.BeginForm("Search", "Search", FormMethod.Get, new { @class = "navbar-form-custom", role = "search" }))
+        {
+            <div class="form-group">
+                @Html.TextBox("top-search", null, new { @class = "form-control", id = "top-search", placeholder = "Nhập từ khóa tìm kiếm" })
+            </div>
+        }
+    </div>
+
+    <ul class="nav navbar-top-links navbar-right">
+        <li>
+            <span class="m-r-sm text-muted welcome-message">
+                Xin chào <strong>Phồ Thanh Đụng </strong>
+            </span>
+        </li>
+
+        <li class="dropdown">
+            <a class="dropdown-toggle count-info" data-toggle="dropdown" href="#">
+                <i class="fa fa-envelope"></i>
+                <span class="label label-warning">10</span>
+            </a>
+            <ul class="dropdown-menu dropdown-messages">
+                <li>
+                    <div class="dropdown-messages-box">
+                        <a href="@Url.Action("View", "Message", new { area = "Adm", id=31 })" class="pull-left">
+                            <img alt="Dùng Thanh Nộ " class="img-circle" src="~/images/a1.jpg" title="Phùng Thanh Độ ">
+                        </a>
+                        <div class="media-body">
+                            <small class="pull-right">30 phút trước</small>
+                            <strong>Phùng Thanh Độ </strong> đã giao hàng đến <strong>Yên Lãng</strong>.
+                            <br>
+                            <small class="text-muted">Vui lòng xác nhận giao dịch hoàn tất</small>
+                        </div>
+                    </div>
+                </li>
+                <li class="divider"></li>
+
+                <li>
+                    <div class="dropdown-messages-box">
+                        <a href="@Url.Action("View", "Message", new { area = "Adm", id=32 })" class="pull-left">
+                            <img alt="Trần Thị Lan" class="img-circle" src="~/images/a2.jpg" title="Trần Thị Lan">
+                        </a>
+                        <div class="media-body">
+                            <small class="pull-right">30 phút trước</small>
+                            <strong>Mỳ Ly Xôn </strong> đã giao hàng đến <strong>Căng Bào</strong>.
+                            <br>
+                            <small class="text-muted">Vui lòng xác nhận giao dịch hoàn tất</small>
+                        </div>
+                    </div>
+                </li>
+                <li class="divider"></li>
+
+                <li>
+                    <div class="dropdown-messages-box">
+                        <a href="@Url.Action("View", "Message", new { area = "Adm", id=33 })" class="pull-left">
+                            <img alt="Phụng Thanh Đồ" class="img-circle" src="~/images/a3.jpg" title="Lê Văn Minh">
+                        </a>
+                        <div class="media-body">
+                            <small class="pull-right">1 giờ trước</small>
+                            <strong>Phụng Thanh Đồ</strong> đã giao hàng đến <strong>Đà Lạt (Đè tem )</strong>.
+                            <br>
+                            <small class="text-muted">Vui lòng xác nhận giao dịch hoàn tất</small>
+                        </div>
+                    </div>
+                </li>
+                <li class="divider"></li>
+
+                <li>
+                    <div class="dropdown-messages-box">
+                        <a href="@Url.Action("View", "Message", new { area = "Adm", id=34 })" class="pull-left">
+                            <img alt="Phạm Thị Hương" class="img-circle" src="~/images/a4.jpg" title="Phạm Thị Hương">
+                        </a>
+                        <div class="media-body">
+                            <small class="pull-right">2 giờ trước</small>
+                            <strong>Phạm Thị Hương</strong> đã giao hàng đến <strong>TP.HCM</strong>.
+                            <br>
+                            <small class="text-muted">Vui lòng xác nhận giao dịch hoàn tất</small>
+                        </div>
+                    </div>
+                </li>
+                <li class="divider"></li>
+
+                <li>
+                    <div class="text-center link-block">
+                        <a href="@Url.Action("Inbox", "Message", new { area = "Adm" })">
+                            <i class="fa fa-envelope"></i> <strong>Xem tất cả tin nhắn</strong>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li class="dropdown">
+            <a class="dropdown-toggle count-info" href="#" data-toggle="dropdown">
+                <i class="fa fa-bell"></i>
+                <span class="label label-primary">5</span>
+            </a>
+            <ul class="dropdown-menu dropdown-alerts">
+                <li>
+                    <a href="@Url.Action("Inbox", "Message", new { area = "Adm" })">
+                        <div>
+                            <i class="fa fa-envelope fa-fw"></i> Bạn có 10 tin nhắn mới
+                            <span class="pull-right text-muted small">5 phút trước</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="@Url.Action("LockedAccount", "Account", new { area = "Adm" })">
+                        <div>
+                            <i class="fa fa-lock fa-fw"></i> 2 tài khoản đã bị khóa
+                            <span class="pull-right text-muted small">10 phút trước</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <div class="text-center link-block">
+                        <a href="@Url.Action("Notification", "Message", new { area = "Adm" })">
+                            <strong>Xem tất cả thông báo</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            @using (Html.BeginForm("LogOff", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <a href="javascript:document.getElementById('logoutForm').submit()">
+                    <i class="fa fa-sign-out"></i>
+                    <strong>Log off</strong>
+                </a>
+            }
+        </li>
+    </ul>
+</nav>

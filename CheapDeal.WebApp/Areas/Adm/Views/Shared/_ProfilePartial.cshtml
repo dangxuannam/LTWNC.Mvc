@@ -1,0 +1,242 @@
+﻿@using Microsoft.AspNet.Identity
+@using System.Data.Entity
+@{
+    var user = ViewContext.HttpContext.User;
+    var userId = user.Identity.GetUserId();
+    var userName = user.Identity.GetUserName();
+
+    var db = new CheapDeal.WebApp.DAL.ShopDbContext();
+    var currentUser = db.Users.Include(u => u.Profile).FirstOrDefault(u => u.Id == userId);
+
+    string displayName = userName;
+    string avatarUrl = "~/Images/profile_small.jpg";
+    string roleDisplay = "Người dùng";
+
+    if (currentUser != null)
+    {
+        if (currentUser.Profile != null)
+        {
+            displayName = currentUser.Profile.FullName ?? userName;
+            avatarUrl = currentUser.Profile.AvatarUrl ?? avatarUrl;
+        }
+
+        var roles = currentUser.Roles.Select(r => r.RoleId).ToList();
+        var roleNames = db.Roles.Where(r => roles.Contains(r.Id)).Select(r => r.Name).ToList();
+        if (roleNames.Contains("Admin"))
+        {
+            roleDisplay = "Quản trị hệ thống";
+        }
+        else if (roleNames.Contains("Manager"))
+        {
+            roleDisplay = "Quản lý";
+        }
+        else if (roleNames.Contains("Sale"))
+        {
+            roleDisplay = "Nhân viên bán hàng";
+        }
+        else
+        {
+            roleDisplay = "Khách hàng";
+        }
+    }
+}
+
+<style>
+    .dropdown.profile-element {
+        width: 100%;
+        padding: 10px 12px;
+        background: #1c2b36;
+        border-bottom: 1px solid #293846;
+        min-height: 50px;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .profile-element > span {
+        display: block;
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+
+    .profile-element img.img-circle {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        display: block;
+    }
+
+    .profile-element .profile-info {
+        flex-grow: 1;
+        margin-left: 8px;
+        min-width: 0;
+    }
+
+    .profile-element .profile-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .profile-element .clear {
+        display: block;
+        line-height: 1.2;
+    }
+
+    .profile-element .font-bold {
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 1px;
+    }
+
+    .profile-element .text-muted {
+        color: #a7b1c2 !important;
+        font-size: 10px;
+        display: block;
+        position: relative;
+        padding-right: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .profile-element .caret {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        border-top: 3px solid #a7b1c2;
+        border-right: 3px solid transparent;
+        border-left: 3px solid transparent;
+    }
+
+    .profile-element .profile-dropdown {
+        position: absolute;
+        top: 50px;
+        left: 0;
+        right: 0;
+        background: #2f4050;
+        border: 1px solid #293846;
+        border-radius: 0 0 3px 3px;
+        padding: 3px 0;
+        z-index: 1000;
+        display: none;
+        margin-top: 0;
+    }
+
+    .profile-element:hover .profile-dropdown {
+        display: block;
+    }
+
+    .profile-element .profile-dropdown li {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        .profile-element .profile-dropdown li a,
+        .profile-element .profile-dropdown li button {
+            color: #a7b1c2;
+            padding: 6px 12px;
+            display: block;
+            text-decoration: none;
+            font-size: 11px;
+            text-align: left;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+        }
+
+            .profile-element .profile-dropdown li a:hover,
+            .profile-element .profile-dropdown li button:hover {
+                color: #fff;
+                background: #19aa8d;
+            }
+
+    .profile-element .profile-dropdown .divider {
+        height: 1px;
+        margin: 3px 12px;
+        overflow: hidden;
+        background-color: #293846;
+    }
+
+    /* Logo element */
+    .logo-element {
+        padding: 10px;
+        text-align: center;
+        background: #1c2b36;
+        color: #fff;
+        font-weight: bold;
+        font-size: 14px;
+        border-top: 1px solid #293846;
+    }
+</style>
+
+@using (Html.BeginForm("LogOff", "Account", new { area = "" }, FormMethod.Post, new { id = "logoutform", style = "display:none;" }))
+{
+    @Html.AntiForgeryToken()
+}
+
+<div class="dropdown profile-element">
+    <span>
+        <img class="img-circle"
+             src="@Url.Content(avatarUrl)"
+             alt="@displayName"
+             onerror="this.src='@Url.Content("~/Images/default-avatar.png")'" />
+    </span>
+
+    <div class="profile-info">
+        <a href="@Url.Action("Index","Profile", new { area = "Adm" })" class="profile-link">
+            <span class="clear">
+                <span class="block m-t-xs">
+                    <strong class="font-bold">@displayName</strong>
+                </span>
+                <span class="text-muted text-xs block">
+                    @roleDisplay
+                    <b class="caret"></b>
+                </span>
+            </span>
+        </a>
+    </div>
+
+    <ul class="profile-dropdown animated fadeIn">
+        <li>
+            <a href="@Url.Action("Index", "Profile", new { area = "Adm" })">
+                <i class="fa fa-user"></i> Xem Profile
+            </a>
+        </li>
+        <li>
+            <a href="@Url.Action("ChangePassword", "Profile", new { area = "Adm" })">
+                <i class="fa fa-key"></i> Đổi mật khẩu
+            </a>
+        </li>
+        <li>
+            <a href="@Url.Action("Messages", "Profile", new { area = "Adm" })">
+                <i class="fa fa-envelope"></i> Xem tin nhắn
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="javascript:void(0)" onclick="document.getElementById('logoutform').submit()">
+                <i class="fa fa-sign-out"></i> Đăng xuất
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="logo-element">
+    WTS
+</div>

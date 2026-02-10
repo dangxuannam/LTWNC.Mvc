@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - WebTaiSan</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+        }
+
+        /* Navigation Bar */
+        .auth-navbar {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .auth-navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .auth-navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 18px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .auth-navbar-brand:hover {
+                color: white;
+                text-decoration: none;
+            }
+
+            .auth-navbar-brand i {
+                font-size: 28px;
+            }
+
+        .auth-navbar-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 5px;
+        }
+
+            .auth-navbar-menu li {
+                margin: 0;
+                list-style: none; /* Loại bỏ bullet points */
+            }
+
+            .auth-navbar-menu a {
+                color: white;
+                text-decoration: none;
+                padding: 18px 20px;
+                display: block;
+                font-size: 15px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                border-bottom: 3px solid transparent;
+            }
+
+                .auth-navbar-menu a:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    border-bottom-color: white;
+                    color: white;
+                }
+
+                .auth-navbar-menu a.active {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-bottom-color: white;
+                }
+
+        /* Mobile Menu Toggle */
+        .navbar-toggle {
+            display: none;
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 20px;
+        }
+
+            .navbar-toggle:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .navbar-toggle {
+                display: block;
+            }
+
+            .auth-navbar-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+                flex-direction: column;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+                .auth-navbar-menu.show {
+                    display: flex;
+                }
+
+                .auth-navbar-menu li {
+                    list-style: none; /* Đảm bảo không có bullet trong mobile */
+                }
+
+                .auth-navbar-menu a {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    border-left: none !important;
+                }
+
+                    .auth-navbar-menu a:hover {
+                        border-left: none !important;
+                        background: rgba(255, 255, 255, 0.15);
+                    }
+        }
+
+        /* Content Area */
+        .auth-content {
+            min-height: calc(100vh - 60px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="auth-navbar">
+        <div class="auth-navbar-container">
+            <a href="@Url.Action("Index", "Home")" class="auth-navbar-brand">
+                <i class="fa fa-building"></i>
+                <span>WebTaiSan</span>
+            </a>
+
+            <button class="navbar-toggle" onclick="toggleMenu()">
+                <i class="fa fa-bars"></i>
+            </button>
+
+            <ul class="auth-navbar-menu" id="authMenu">
+                <li>
+                    <a href="@Url.Action("Index", "Home")">
+                        <i class="fa fa-home"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("About", "Home")">
+                        <i class="fa fa-info-circle"></i> About
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Contact", "Home")">
+                        <i class="fa fa-envelope"></i> Contact
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Register", "Account")">
+                        <i class="fa fa-user-plus"></i> Register
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Login", "Account")">
+                        <i class="fa fa-sign-in"></i> Log in
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="auth-content">
+        @RenderBody()
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+    <script>function toggleMenu() {
+            var menu = document.getElementById('authMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            var menu = document.getElementById('authMenu');
+            var toggle = document.querySelector('.navbar-toggle');
+
+            if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Highlight active menu item based on current URL
+        document.addEventListener('DOMContentLoaded', function() {
+            var currentPath = window.location.pathname.toLowerCase();
+            var menuLinks = document.querySelectorAll('.auth-navbar-menu a');
+
+            menuLinks.forEach(function(link) {
+                var linkPath = link.getAttribute('href');
+                if (linkPath && currentPath.includes(linkPath.toLowerCase()) && linkPath !== '/') {
+                    link.classList.add('active');
+                }
+            });
+        });</script>
+</body>
+</html>

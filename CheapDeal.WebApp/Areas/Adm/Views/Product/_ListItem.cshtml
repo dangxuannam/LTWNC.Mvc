@@ -1,0 +1,65 @@
+﻿@model Product 
+    <tr>
+        <td class="hidden-xs">
+            <a href="@Url.Action("Details", new{id=Model.ProductId})" title = "Xem chi tiết">
+                <img src="@Url.Content(Model.ThumbImage)" alt="@Model.Name" width="100" />
+            </a>
+        </td>
+
+        <td>
+            <a href="@Url.Action("Details", new {id=Model.ProductId})"
+                class="text-success font-bold" title="Xem chi tiết">
+                @Html.DisplayFor(model => model.Name)
+            </a>
+            (<strong class="text-danger">@Html.DisplayFor(model => model.ProductCode)</strong>)
+            <br />
+            Hãng sản xuất :@Html.DisplayFor(model => model.Price) <br />
+            <small>@Html.DisplayFor(model => model.ShortIntro) </small>
+        </td>
+
+        <td class="hidden-sm hidden-xs">
+            Giá SP: @String.Format("{0:N0}", Model.Price) đ<br />
+            Giảm Giá: @String.Format("{0:P1}", Model.Discount)<br />
+            Giá bán: @String.Format("{0:N0}", Model.Price * (1 - Model.Discount)) đ
+
+<td class ="hidden-sm hidden-xs">
+            @Html.DisplayFor(model => model.Quantity)
+            @Html.DisplayFor(model => model.QtyPerUnit)
+        </td>
+
+        <td class="td_toggle">
+            <button type="button" class="toggle @(Model.Actived.ToString().ToLower())"
+                data-toggle-state = "true"
+                data-url = "@Url.Action("UpdateToggle")"
+                data-args = "Actived_@(Model.Actived.ToString().ToLower())_@(Model.ProductId)">
+            </button>
+        </td>
+
+        <td>
+            @(Html.Bootstrap()
+                .ActionLink("", "Edit")
+                .RouteValues(new { id = Model.ProductId})
+                .Title("Cập nhật thông tin Sản Phẩm")
+                .AppendIcon("fa fa-pencil"))
+            @(Html.Bootstrap()
+                .ActionLink("", "List", "Comment")
+                .RouteValues(new { id = Model.ProductId})
+                .AppendIcon("fa fa-comments")
+                .Title("Xem bình luận "))
+            @(Html.Bootstrap()
+                .ActionLink("", "List", "Picture")
+                .RouteValues(new { id = Model.ProductId})
+                .AppendIcon("fa fa-picture-o")
+                .Title("Xem hình ảnh sản phẩm "))
+            @(Html.Bootstrap()
+                .ActionLink("", "History", "Product")
+                .RouteValues(new { id = Model.ProductId})
+                .AppendIcon("fa fa-history")
+                .Title("Xem nhật ký cập nhật"))
+            @(Html.Bootstrap()
+                .ActionLink("", "BuyItem", "Order")
+                .RouteValues(new { id = Model.ProductId})
+                .AppendIcon("fa fa-dropbox")
+                .Title("Xem đơn hàng mua sản phẩm này"))
+        </td>
+    </tr>

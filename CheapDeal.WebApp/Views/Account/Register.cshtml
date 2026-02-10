@@ -1,0 +1,435 @@
+﻿@model CheapDeal.WebApp.Models.RegisterViewModel
+@{
+    ViewBag.Title = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .register-wrapper {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    }
+
+    .register-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .register-header {
+        background: #20c997;
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .register-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
+    }
+
+    .register-header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+    }
+
+    .register-header p {
+        font-size: 14px;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .register-body {
+        padding: 35px 30px;
+    }
+
+    .info-box {
+        background: #e7f9f5;
+        border-left: 4px solid #20c997;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .info-box-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .info-box-text {
+        flex: 1;
+    }
+
+        .info-box-text strong {
+            display: block;
+            font-size: 13px;
+            color: #0e6655;
+            margin-bottom: 3px;
+        }
+
+        .info-box-text p {
+            font-size: 12px;
+            color: #0e6655;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+            .form-group label .required {
+                color: #e74c3c;
+            }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7f8c8d;
+        font-size: 16px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 14px 12px 40px;
+        border: 1px solid #dce4ec;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #20c997;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #95a5a6;
+        }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .password-strength {
+        height: 4px;
+        background: #e1e8ed;
+        border-radius: 2px;
+        margin-top: 8px;
+        overflow: hidden;
+        display: none;
+    }
+
+        .password-strength.show {
+            display: block;
+        }
+
+    .password-strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: #e74c3c;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #f39c12;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: #20c997;
+        }
+
+    .password-hint {
+        font-size: 11px;
+        color: #7f8c8d;
+        margin-top: 5px;
+        display: none;
+    }
+
+        .password-hint.show {
+            display: block;
+        }
+
+    .btn-register {
+        width: 100%;
+        padding: 13px;
+        background: #20c997;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+    }
+
+        .btn-register:hover {
+            background: #1ab386;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 24px 0;
+    }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e1e8ed;
+        }
+
+        .divider span {
+            padding: 0 12px;
+            color: #95a5a6;
+            font-size: 13px;
+        }
+
+    .links {
+        text-align: center;
+    }
+
+        .links a {
+            color: #20c997;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+            .links a:hover {
+                color: #1ab386;
+                text-decoration: underline;
+            }
+
+    @@media (max-width: 576px) {
+        .register-wrapper {
+            padding: 0;
+        }
+
+        .register-container {
+            border-radius: 0;
+            min-height: calc(100vh - 60px);
+        }
+
+        .register-body {
+            padding: 30px 24px;
+        }
+
+        .register-header {
+            padding: 35px 24px;
+        }
+    }
+</style>
+
+<div class="register-wrapper">
+    <div class="register-container">
+        <div class="register-header">
+            <div class="register-icon">👤</div>
+            <h1>Tạo tài khoản mới</h1>
+            <p>Đăng ký để sử dụng hệ thống</p>
+        </div>
+
+        <div class="register-body">
+            <div class="info-box">
+                <div class="info-box-icon">🔒</div>
+                <div class="info-box-text">
+                    <strong>Bảo mật thông tin</strong>
+                    <p>Thông tin của bạn được mã hóa và bảo vệ an toàn.</p>
+                </div>
+            </div>
+
+            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form", id = "registerForm" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary("", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    <label for="UserName">
+                        Tên đăng nhập <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-icon">👤</span>
+                        @Html.TextBoxFor(m => m.UserName, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Nhập tên đăng nhập (3-50 ký tự)",
+                            required = "required"
+                        })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="Email">
+                        Email <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-icon">📧</span>
+                        @Html.TextBoxFor(m => m.Email, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Nhập địa chỉ email",
+                            type = "email",
+                            required = "required"
+                        })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="Password">
+                        Mật khẩu <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-icon">🔑</span>
+                        @Html.PasswordFor(m => m.Password, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Tạo mật khẩu",
+                            id = "passwordInput",
+                            required = "required"
+                        })
+                    </div>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="password-hint" id="passwordHint">Mật khẩu nên có ít nhất 8 ký tự</div>
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label for="ConfirmPassword">
+                        Xác nhận mật khẩu <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-icon">✓</span>
+                        @Html.PasswordFor(m => m.ConfirmPassword, new
+                        {
+                            @class = "form-control",
+                            placeholder = "Nhập lại mật khẩu",
+                            required = "required"
+                        })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                </div>
+
+                <button type="submit" class="btn-register">Đăng ký</button>
+            }
+
+            <div class="divider">
+                <span>hoặc</span>
+            </div>
+
+            <div class="links">
+                @Html.ActionLink("Đã có tài khoản? Đăng nhập", "Login")
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('passwordInput');
+        const strengthBar = document.getElementById('strengthBar');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordHint = document.getElementById('passwordHint');
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function () {
+                const password = this.value;
+
+                if (password.length > 0) {
+                    passwordStrength.classList.add('show');
+                    passwordHint.classList.add('show');
+                } else {
+                    passwordStrength.classList.remove('show');
+                    passwordHint.classList.remove('show');
+                    return;
+                }
+
+                let strength = 0;
+
+                if (password.length >= 8) strength++;
+                if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+                if (password.match(/[0-9]/)) strength++;
+                if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+                strengthBar.className = 'password-strength-bar';
+
+                if (strength <= 2) {
+                    strengthBar.classList.add('weak');
+                    passwordHint.textContent = 'Mật khẩu yếu - Nên thêm chữ hoa, số và ký tự đặc biệt';
+                    passwordHint.style.color = '#e74c3c';
+                } else if (strength === 3) {
+                    strengthBar.classList.add('medium');
+                    passwordHint.textContent = 'Mật khẩu trung bình';
+                    passwordHint.style.color = '#f39c12';
+                } else {
+                    strengthBar.classList.add('strong');
+                    passwordHint.textContent = 'Mật khẩu mạnh';
+                    passwordHint.style.color = '#20c997';
+                }
+            });
+        }
+    });
+</script>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

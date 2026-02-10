@@ -1,0 +1,162 @@
+﻿@model CheapDeal.WebApp.Models.UserDetailsViewModel
+@{
+    ViewBag.Title = "Chi tiết người dùng";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Chi tiết người dùng</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Home", new { Area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index")">Người dùng</a></li>
+            <li class="active"><strong>Chi tiết</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Thông tin cơ bản</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="text-center">
+                        <div class="m-b-md">
+                            <img alt="avatar" class="rounded-circle"
+                                 src="~/Content/images/avatar-default.png"
+                                 style="width: 100px; height: 100px;">
+                        </div>
+                        <h3 class="m-b-xs"><strong>@Model.Profile.FullName</strong></h3>
+                        <div class="m-b-md">
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="label label-primary">@role</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <dl class="dl-horizontal">
+                        <dt>Tên đăng nhập:</dt>
+                        <dd>@Model.Account.UserName</dd>
+
+                        <dt>Email:</dt>
+                        <dd>@Model.Account.Email</dd>
+
+                        <dt>Số điện thoại:</dt>
+                        <dd>@(Model.Profile.Phone ?? "Chưa cập nhật")</dd>
+
+                        <dt>Địa chỉ:</dt>
+                        <dd>@(Model.Profile.Address ?? "Chưa cập nhật")</dd>
+
+                        <dt>Ngày sinh:</dt>
+                        <dd>@(Model.Profile.Birthday?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+
+                        <dt>Giới tính:</dt>
+                        <dd>@(Model.Profile.Gender.HasValue ? (Model.Profile.Gender.Value ? "Nam" : "Nữ") : "Chưa cập nhật")</dd>
+
+                        <dt>Ngày tạo:</dt>
+                        <dd>@Model.Account.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt>Đăng nhập cuối:</dt>
+                        <dd>@(Model.Account.LastLoginDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có")</dd>
+
+                        <dt>Trạng thái:</dt>
+                        <dd>
+                            @if (Model.Account.IsActive)
+                            {
+                                <span class="label label-success">Đang hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="label label-danger">Đã khóa</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <div class="hr-line-dashed"></div>
+
+                    <div class="text-center">
+                        <a href="@Url.Action("Edit", new { id = Model.Account.Id })"
+                           class="btn btn-primary btn-sm">
+                            <i class="fa fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a href="@Url.Action("Index")" class="btn btn-white btn-sm">
+                            <i class="fa fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Thống kê</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="widget style1 navy-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-shopping-cart fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span>Đơn hàng</span>
+                                        <h2 class="font-bold">@Model.OrderCount</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="widget style1 lazur-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-money fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span>Tổng chi tiêu</span>
+                                        <h2 class="font-bold">@Model.TotalSpent.ToString("N0") đ</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Hoạt động gần đây</h5>
+                </div>
+                <div class="ibox-content">
+                    @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                    {
+                        <div class="feed-activity-list">
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <div class="feed-element">
+                                    <div class="media-body">
+                                        <small class="pull-right text-navy">
+                                            @activity.Timestamp.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                        <strong>@activity.ActivityType</strong><br />
+                                        <small class="text-muted">@activity.Description</small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Chưa có hoạt động nào</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
