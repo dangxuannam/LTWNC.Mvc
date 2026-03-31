@@ -66,42 +66,62 @@ namespace CheapDeal.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
+            System.Diagnostics.Debug.WriteLine("[LOGIN] POST action started");
+            System.Diagnostics.Debug.WriteLine($"[LOGIN] Username: {model.UserName}, Remember: {model.RememberMe}");
+            
             if (!ModelState.IsValid)
             {
+                System.Diagnostics.Debug.WriteLine("[LOGIN] ✗ ModelState is invalid");
                 return View(model);
-            }       
+            }
+            
+            System.Diagnostics.Debug.WriteLine("[LOGIN] Attempting password sign in...");
             var result = await SignInManager.PasswordSignInAsync(
                 model.UserName,
                 model.Password,
                 model.RememberMe,
                 shouldLockout: true);
+            
+            System.Diagnostics.Debug.WriteLine($"[LOGIN] Sign-in result: {result}");
+            
             switch (result)
             {
                 case SignInStatus.Success:
+                    System.Diagnostics.Debug.WriteLine("[LOGIN] ✓ Sign-in successful");
 
                     var user = UserManager.FindByName(model.UserName);
-                    var roles = UserManager.GetRoles(user.Id);
-
-                    if (roles.Contains("Admin") || roles.Contains("Manager") || roles.Contains("Sale"))
+                    if (user != null)
                     {
+                        var roles = UserManager.GetRoles(user.Id);
+                        System.Diagnostics.Debug.WriteLine($"[LOGIN] User roles: {string.Join(", ", roles)}");
 
-                        return RedirectToAction("Index", "Dashboard", new { area = "Adm" });
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        if (roles.Contains("Admin") || roles.Contains("Manager") || roles.Contains("Sale"))
                         {
-                            return Redirect(returnUrl);
+                            System.Diagnostics.Debug.WriteLine("[LOGIN] Redirecting to Admin Dashboard");
+                            return RedirectToAction("Index", "Dashboard", new { area = "Adm" });
                         }
-                        return RedirectToAction("Index", "Home");
                     }
+                    
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[LOGIN] Redirecting to return URL: {returnUrl}");
+                        return Redirect(returnUrl);
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine("[LOGIN] Redirecting to Home");
+                    return RedirectToAction("Index", "Home");
 
                 case SignInStatus.LockedOut:
+                    System.Diagnostics.Debug.WriteLine("[LOGIN] ✗ Account is locked out");
                     return View("Lockout");
+                    
                 case SignInStatus.RequiresVerification:
+                    System.Diagnostics.Debug.WriteLine("[LOGIN] Requires verification (2FA)");
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                    
                 case SignInStatus.Failure:
                 default:
+                    System.Diagnostics.Debug.WriteLine("[LOGIN] ✗ Invalid login attempt");
                     ModelState.AddModelError("", "Invalid login attempt.");
                     return View(model);
             }
@@ -156,16 +176,43 @@ namespace CheapDeal.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            System.Diagnostics.Debug.WriteLine("[REGISTER] POST action started");
+            
             if (ModelState.IsValid)
             {
-                var user = new Account { UserName = model.Email, Email = model.Email };
+                System.Diagnostics.Debug.WriteLine($"[REGISTER] Creating user with UserName: {model.UserName}, Email: {model.Email}");
+                
+                var user = new Account { UserName = model.UserName, Email = model.Email };
                 var result = await UserManager.CreateAsync(user, model.Password);
+                
                 if (result.Succeeded)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[REGISTER] ✓ User created successfully. UserId: {user.Id}");
+                    System.Diagnostics.Debug.WriteLine($"[REGISTER] Attempting to sign in user...");
+                    
                     await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[REGISTER] ✓ User signed in successfully");
                     return RedirectToAction("Index", "Home");
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"[REGISTER] ✗ User creation failed. Error count: {result.Errors.Count()}");
+                foreach (var error in result.Errors)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[REGISTER] Error: {error}");
+                }
                 AddErrors(result);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[REGISTER] ✗ ModelState is invalid");
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[REGISTER] Validation Error: {error.ErrorMessage}");
+                    }
+                }
             }
 
             return View(model);
@@ -188,36 +235,134 @@ namespace CheapDeal.WebApp.Controllers
         {
             return View();
         }
+
         // POST: /Account/ForgotPassword
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Tìm user theo EMAIL (không phải username)
+            var user = await UserManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
             {
-                var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
-                }        
+                // Email không tồn tại → hiện thông báo rõ ràng (không ẩn)
+                ModelState.AddModelError("Email", "Email này chưa được đăng ký trong hệ thống.");
+                return View(model);
             }
-            return View(model);
+
+            // Tạo OTP 6 chữ số
+            var otp = new Random().Next(100000, 999999).ToString();
+            var expiry = DateTime.Now.AddMinutes(10);
+
+            // Lưu OTP vào Session (dùng email làm key vì user chưa đăng nhập)
+            Session["ForgotPassOTP_" + user.Id] = otp;
+            Session["ForgotPassOTP_Expiry_" + user.Id] = expiry;
+            Session["ForgotPassUserId"] = user.Id; // để dùng ở bước VerifyOtp
+
+            // Gửi email OTP
+            try
+            {
+                await UserManager.SendEmailAsync(user.Id,
+                    "Mã OTP khôi phục mật khẩu",
+                    $@"<div style='font-family:Arial,sans-serif;max-width:500px;margin:auto;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;'>
+                        <div style='background:linear-gradient(135deg,#17a2b8,#20c997);padding:30px;text-align:center;'>
+                            <h2 style='color:white;margin:0;'>🔐 Khôi phục mật khẩu</h2>
+                        </div>
+                        <div style='padding:30px;background:#fff;'>
+                            <p style='color:#333;'>Xin chào <strong>{user.UserName}</strong>,</p>
+                            <p style='color:#555;'>Bạn đã yêu cầu đặt lại mật khẩu. Đây là mã OTP của bạn:</p>
+                            <div style='background:#f0f9ff;border:2px dashed #17a2b8;border-radius:10px;padding:20px;text-align:center;margin:20px 0;'>
+                                <span style='font-size:36px;font-weight:bold;letter-spacing:8px;color:#17a2b8;'>{otp}</span>
+                            </div>
+                            <p style='color:#e74c3c;font-size:13px;'>⚠ Mã OTP có hiệu lực trong <strong>10 phút</strong>. Không chia sẻ mã này cho bất kỳ ai.</p>
+                            <p style='color:#95a5a6;font-size:12px;'>Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.</p>
+                        </div>
+                    </div>"
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("SendOTP ForgotPassword Error: " + ex.Message);
+                ModelState.AddModelError("", "Gửi email thất bại. Vui lòng kiểm tra cấu hình SMTP.");
+                return View(model);
+            }
+
+            // Ẩn email một phần để hiển thị: abc***@gmail.com
+            var parts = model.Email.Split('@');
+            var masked = parts[0].Substring(0, Math.Min(3, parts[0].Length)) + "***@" + parts[1];
+            TempData["MaskedEmail"] = masked;
+
+            return RedirectToAction("VerifyOtp");
         }
 
-        // GET: /Account/ForgotPasswordConfirmation
+        // GET: /Account/VerifyOtp
         [AllowAnonymous]
-        public ActionResult ForgotPasswordConfirmation()
+        public ActionResult VerifyOtp()
         {
-            return View();
+            if (Session["ForgotPassUserId"] == null)
+                return RedirectToAction("ForgotPassword");
+
+            return View(new VerifyOtpViewModel
+            {
+                Email = TempData["MaskedEmail"] as string ?? ""
+            });
+        }
+
+        // POST: /Account/VerifyOtp
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> VerifyOtp(VerifyOtpViewModel model)
+        {
+            var userId = Session["ForgotPassUserId"] as string;
+            if (userId == null)
+                return RedirectToAction("ForgotPassword");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var savedOtp = Session["ForgotPassOTP_" + userId] as string;
+            var expiry = Session["ForgotPassOTP_Expiry_" + userId] as DateTime?;
+
+            if (expiry == null || DateTime.Now > expiry.Value)
+            {
+                ModelState.AddModelError("Otp", "Mã OTP đã hết hạn. Vui lòng gửi lại.");
+                return View(model);
+            }
+
+            if (string.IsNullOrEmpty(savedOtp) || savedOtp != model.Otp.Trim())
+            {
+                ModelState.AddModelError("Otp", "Mã OTP không chính xác.");
+                return View(model);
+            }
+
+            // OTP đúng → tạo reset token và chuyển sang trang đặt mật khẩu mới
+            var resetToken = await UserManager.GeneratePasswordResetTokenAsync(userId);
+
+            // Xóa OTP khỏi session
+            Session.Remove("ForgotPassOTP_" + userId);
+            Session.Remove("ForgotPassOTP_Expiry_" + userId);
+            // Lưu token và userId để dùng ở ResetPassword
+            Session["ForgotPassResetToken"] = resetToken;
+            // Giữ ForgotPassUserId để ResetPassword dùng
+
+            return RedirectToAction("ResetPassword");
         }
 
         // GET: /Account/ResetPassword
         [AllowAnonymous]
-        public ActionResult ResetPassword(string code)
+        public ActionResult ResetPassword()
         {
-            return code == null ? View("Error") : View();
+            // Cho phép vào nếu có reset token trong session (flow OTP)
+            if (Session["ForgotPassResetToken"] != null && Session["ForgotPassUserId"] != null)
+                return View(new ResetPasswordViewModel());
+
+            return View("Error");
         }
 
         // POST: /Account/ResetPassword
@@ -226,27 +371,80 @@ namespace CheapDeal.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
+            System.Diagnostics.Debug.WriteLine("[RESET_PASSWORD] POST action started");
+            
             if (!ModelState.IsValid)
             {
+                System.Diagnostics.Debug.WriteLine("[RESET_PASSWORD] ✗ ModelState is INVALID");
+                System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] Total errors: {ModelState.Values.Sum(v => v.Errors.Count)}");
+                
+                // Log từng lỗi
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] ERROR: {error.ErrorMessage}");
+                        if (error.Exception != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] EXCEPTION: {error.Exception.Message}");
+                        }
+                    }
+                }
+                
                 return View(model);
             }
-            var user = await UserManager.FindByNameAsync(model.Email);
-            if (user == null)
+
+            System.Diagnostics.Debug.WriteLine("[RESET_PASSWORD] ✓ ModelState is valid");
+
+            var userId = Session["ForgotPassUserId"] as string;
+            var resetToken = Session["ForgotPassResetToken"] as string;
+
+            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] userId: {(string.IsNullOrEmpty(userId) ? "NULL" : userId)}");
+            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] resetToken: {(string.IsNullOrEmpty(resetToken) ? "NULL" : "EXISTS")}");
+
+            if (userId == null || resetToken == null)
             {
-                return RedirectToAction("ResetPasswordConfirmation", "Account");
+                System.Diagnostics.Debug.WriteLine("[RESET_PASSWORD] ✗ Session expired - userId or resetToken is null");
+                ModelState.AddModelError("", "Phiên làm việc đã hết hạn. Vui lòng thực hiện lại.");
+                return View(model);
             }
-            var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
+
+            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] Attempting to reset password for user: {userId}");
+            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] New password length: {model.Password?.Length ?? 0}");
+
+            var result = await UserManager.ResetPasswordAsync(userId, resetToken, model.Password);
+            
             if (result.Succeeded)
             {
-                return RedirectToAction("ResetPasswordConfirmation", "Account");
+                System.Diagnostics.Debug.WriteLine("[RESET_PASSWORD] ✓ Password reset successful");
+                
+                // Dọn sạch session
+                Session.Remove("ForgotPassUserId");
+                Session.Remove("ForgotPassResetToken");
+
+                return RedirectToAction("ResetPasswordConfirmation");
             }
+
+            System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] ✗ Password reset failed. Error count: {result.Errors.Count()}");
+            foreach (var error in result.Errors)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RESET_PASSWORD] Error: {error}");
+            }
+
             AddErrors(result);
-            return View();
+            return View(model);
         }
 
         // GET: /Account/ResetPasswordConfirmation
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
+
+        // GET: /Account/ForgotPasswordConfirmation (giữ lại nếu có view cũ dùng)
+        [AllowAnonymous]
+        public ActionResult ForgotPasswordConfirmation()
         {
             return View();
         }

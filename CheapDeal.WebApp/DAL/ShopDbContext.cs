@@ -31,7 +31,12 @@ namespace CheapDeal.WebApp.DAL
         public DbSet<Payment> Payments { get; set; }
         public DbSet<AllModels.Notification> Notifications { get; set; }
         public DbSet<AllModels.UserActivity> UserActivities { get; set; }
-
+        public DbSet<Contract> Contracts { get; set; }
+        public DbSet<ContractStatus> ContractStatuses { get; set; }
+        public DbSet<ContractPaymentSchedule> ContractPaymentSchedules { get; set; }
+        public DbSet<ContractFileMetadata> ContractFileMetadatas { get; set; }
+        public DbSet<Reminder> Reminders { get; set; }
+        public DbSet<HangfireJobLog> HangfireJobLogs { get; set; }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -167,6 +172,67 @@ namespace CheapDeal.WebApp.DAL
                 .Property(p => p.PaymentMethod)
                 .IsRequired()
                 .HasMaxLength(50);
+            modelBuilder.Entity<Contract>()
+                   .ToTable("Contracts");                  
+
+            modelBuilder.Entity<ContractStatus>()
+                        .ToTable("ContractStatus");             
+
+            modelBuilder.Entity<ContractPaymentSchedule>()
+                        .ToTable("ContractPaymentSchedule");    
+
+            modelBuilder.Entity<ContractFileMetadata>()
+                        .ToTable("ContractFileMetadata");       
+
+            modelBuilder.Entity<Contract>()
+                        .Property(c => c.RowVersion)
+                        .IsRowVersion();
+
+            modelBuilder.Entity<Contract>()
+                        .HasRequired(c => c.Status)
+                        .WithMany(s => s.Contracts)
+                        .HasForeignKey(c => c.StatusId);
+
+            modelBuilder.Entity<Contract>()
+                        .HasRequired(c => c.Customer)
+                        .WithMany()
+                        .HasForeignKey(c => c.CustomerId)
+                        .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<ContractPaymentSchedule>()
+                        .HasRequired(s => s.Contract)
+                        .WithMany(c => c.Schedules)
+                        .HasForeignKey(s => s.ContractId);
+
+            modelBuilder.Entity<ContractFileMetadata>()
+                        .HasRequired(f => f.Contract)
+                        .WithMany()
+                        .HasForeignKey(f => f.ContractId)
+                        .WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<Reminder>()
+            .ToTable("Reminders");
+
+            modelBuilder.Entity<HangfireJobLog>()
+                        .ToTable("HangfireJobLog");
+
+            // Map quan hệ Reminder → ContractPaymentSchedule
+            modelBuilder.Entity<Reminder>()
+                        .HasRequired(r => r.Schedule)
+                        .WithMany()
+                        .HasForeignKey(r => r.ScheduleId)
+                        .WillCascadeOnDelete(true);
+
+            // Map quan hệ Reminder → Contract
+            modelBuilder.Entity<Reminder>()
+                        .HasRequired(r => r.Contract)
+                        .WithMany()
+                        .HasForeignKey(r => r.ContractId)
+                        .WillCascadeOnDelete(false);
+
+            // Không map DurationSeconds (computed property)
+            modelBuilder.Entity<HangfireJobLog>()
+                        .Ignore(j => j.DurationSeconds);
         }
 
         public static ShopDbContext Create()

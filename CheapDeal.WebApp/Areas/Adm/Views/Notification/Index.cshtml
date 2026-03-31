@@ -1,0 +1,343 @@
+﻿@model IEnumerable<CheapDeal.WebApp.Models.Reminder>
+@{
+    ViewBag.Title = "Thông báo Email";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2><i class="fa fa-envelope"></i> Thông báo Email</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Dashboard", new { area = "Adm" })">Trang chủ</a></li>
+            <li class="active"><strong>Thông báo Email</strong></li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    @* Thống kê *@
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="ibox" style="border-left:4px solid #f8ac59">
+                <div class="ibox-content">
+                    <h1 class="no-margins text-warning">@ViewBag.PendingCount</h1>
+                    <small><i class="fa fa-clock-o"></i> Chờ gửi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="ibox" style="border-left:4px solid #1ab394">
+                <div class="ibox-content">
+                    <h1 class="no-margins text-success">@ViewBag.SentToday</h1>
+                    <small><i class="fa fa-check"></i> Đã gửi hôm nay</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="ibox" style="border-left:4px solid #ed5565">
+                <div class="ibox-content">
+                    <h1 class="no-margins text-danger">@ViewBag.FailedCount</h1>
+                    <small><i class="fa fa-times"></i> Thất bại</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="ibox" style="border-left:4px solid #23c6c8">
+                <div class="ibox-content">
+                    <h1 class="no-margins">@ViewBag.TotalSent</h1>
+                    <small><i class="fa fa-envelope-o"></i> Tổng đã gửi</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        @* Panel điều khiển *@
+        <div class="col-lg-4">
+
+            @* Gửi ngay *@
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-paper-plane"></i> Gửi Email Ngay</h5>
+                </div>
+                <div class="ibox-content">
+                    @Html.AntiForgeryToken()
+                    <p class="text-muted" style="font-size:13px">
+                        Gửi tất cả reminder PENDING đã đến hạn.<br>
+                        Job tự động lúc <strong>9:00 sáng</strong> mỗi ngày.
+                    </p>
+                    <button id="btnSendNow" class="btn btn-primary btn-block btn-lg">
+                        <i class="fa fa-send"></i>
+                        Gửi ngay (@ViewBag.PendingCount email chờ)
+                    </button>
+                    <div id="sendResult" class="alert" style="margin-top:10px;display:none"></div>
+                </div>
+            </div>
+
+            @* Test SMTP — nút to hơn *@
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-flask"></i> Test SMTP</h5>
+                </div>
+                <div class="ibox-content">
+                    <p class="text-muted" style="font-size:13px">
+                        Gửi email test để kiểm tra cấu hình SMTP.
+                    </p>
+                    <div class="form-group">
+                        <input type="email" id="testEmail" class="form-control input-lg"
+                               placeholder="Nhập email nhận test..." />
+                    </div>
+                    <button id="btnTest" class="btn btn-info btn-block btn-lg">
+                        <i class="fa fa-flask"></i> Gửi Email Test
+                    </button>
+                    <div id="testResult" class="alert" style="margin-top:10px;display:none"></div>
+                </div>
+            </div>
+
+            @* Cấu hình SMTP *@
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-cog"></i> Cấu hình SMTP hiện tại</h5>
+                </div>
+                <div class="ibox-content" style="padding:0">
+                    <table class="table table-condensed" style="margin:0">
+                        <tr>
+                            <td><small class="text-muted">Host</small></td>
+                            <td><code>@(System.Configuration.ConfigurationManager.AppSettings["Smtp.Host"] ?? "chưa cấu hình")</code></td>
+                        </tr>
+                        <tr>
+                            <td><small class="text-muted">Port</small></td>
+                            <td><code>@(System.Configuration.ConfigurationManager.AppSettings["Smtp.Port"] ?? "587")</code></td>
+                        </tr>
+                        <tr>
+                            <td><small class="text-muted">User</small></td>
+                            <td>
+                                @{
+                                    var smtpUser = System.Configuration.ConfigurationManager.AppSettings["Smtp.User"];
+                                }
+                                @if (!string.IsNullOrEmpty(smtpUser))
+                                {
+                                    <code>@smtpUser</code>
+                                }
+                                else
+                                {
+                                    <span class="label label-danger">Chưa cấu hình</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><small class="text-muted">Password</small></td>
+                            <td>
+                                @{
+                                    var smtpPass = System.Configuration.ConfigurationManager.AppSettings["Smtp.Password"];
+                                }
+                                @if (!string.IsNullOrEmpty(smtpPass))
+                                {
+                                    <span class="label label-success">✓ Đã cấu hình</span>
+                                }
+                                else
+                                {
+                                    <span class="label label-danger">Chưa cấu hình</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* Lịch sử + Lịch tự động *@
+        <div class="col-lg-8">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-history"></i> Lịch sử gửi gần đây</h5>
+                    <div class="ibox-tools">
+                        <a href="@Url.Action("Reminders", "Job", new { area = "Adm" })"
+                           class="btn btn-xs btn-white">Xem tất cả reminders</a>
+                    </div>
+                </div>
+                <div class="ibox-content" style="padding:0">
+                    <table class="table table-hover table-condensed" style="margin:0">
+                        <thead>
+                            <tr>
+                                <th>Hợp đồng</th>
+                                <th>Khách hàng</th>
+                                <th>Tiêu đề</th>
+                                <th>Ngày gửi</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var r in Model)
+                                {
+                                    <tr>
+                                        <td><small>@(r.Contract?.ContractCode ?? "#" + r.ContractId)</small></td>
+                                        <td><small>@(r.Contract?.Customer?.UserName ?? "—")</small></td>
+                                        <td>
+                                            <small>
+                                                @(r.Subject != null && r.Subject.Length > 40
+                                                ? r.Subject.Substring(0, 40) + "..."
+                                                : r.Subject)
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small>
+                                                @(r.SentDate.HasValue
+                                                ? r.SentDate.Value.ToString("dd/MM HH:mm")
+                                                : "—")
+                                            </small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="label @(r.Status == "SENT" ? "label-success" : "label-danger")">
+                                                @r.Status
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (r.Status == "FAILED")
+                                            {
+                                                <button class="btn btn-xs btn-warning btn-retry"
+                                                        data-id="@r.ReminderId">
+                                                    <i class="fa fa-refresh"></i> Retry
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted" style="padding:20px">
+                                        <i class="fa fa-inbox fa-2x"></i><br>
+                                        Chưa có lịch sử gửi email.<br>
+                                        <small>Chạy Daily Job trước để tạo Reminders, sau đó bấm Gửi ngay.</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-clock-o"></i> Lịch chạy tự động</h5>
+                </div>
+                <div class="ibox-content" style="padding:0">
+                    <table class="table table-condensed" style="margin:0">
+                        <thead><tr><th>Job</th><th>Cron</th><th>Mô tả</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="label label-warning">daily-contract-jobs</span></td>
+                                <td><code>0 8 * * *</code></td>
+                                <td>8:00 sáng — quét kỳ đến hạn, tạo Reminders PENDING</td>
+                            </tr>
+                            <tr>
+                                <td><span class="label label-primary">send-pending-emails</span></td>
+                                <td><code>0 9 * * *</code></td>
+                                <td>9:00 sáng — gửi email tất cả Reminder PENDING</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @* Hướng dẫn nhanh *@
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-info-circle"></i> Hướng dẫn test nhanh</h5>
+                </div>
+                <div class="ibox-content">
+                    <ol style="margin:0;padding-left:20px;line-height:2">
+                        <li>Vào <a href="@Url.Action("Index", "Job", new { area = "Adm" })">Background Jobs</a> → bấm <strong>Chạy Daily Job</strong> để tạo Reminders</li>
+                        <li>Quay lại trang này — số <strong>Chờ gửi</strong> sẽ tăng lên</li>
+                        <li>Bấm <strong>Gửi ngay</strong> để gửi email ngay lập tức</li>
+                        <li>Kiểm tra hộp thư của khách hàng</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+    <script>
+$(document).ready(function () {
+    var token = $('input[name="__RequestVerificationToken"]').val();
+
+    // Gửi ngay
+    $('#btnSendNow').click(function () {
+        var btn = $(this);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+        $.post('@Url.Action("SendNow", "Notification", new { area = "Adm" })',
+            { __RequestVerificationToken: token },
+            function (res) {
+                $('#sendResult')
+                    .removeClass('alert-success alert-danger')
+                    .addClass('alert ' + (res.success ? 'alert-success' : 'alert-danger'))
+                    .html('<i class="fa fa-' + (res.success ? 'check' : 'times') + '"></i> ' + res.message)
+                    .show();
+                if (res.success) {
+                    toastr.success('Job đã được queue!');
+                    setTimeout(function () { location.reload(); }, 3000);
+                } else {
+                    toastr.error(res.message);
+                }
+            }
+        ).always(function () {
+            btn.prop('disabled', false)
+               .html('<i class="fa fa-send"></i> Gửi ngay (@ViewBag.PendingCount email chờ)');
+        });
+    });
+
+    // Test SMTP
+    $('#btnTest').click(function () {
+        var email = $('#testEmail').val().trim();
+        if (!email) { toastr.warning('Vui lòng nhập địa chỉ email'); return; }
+        var btn = $(this);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang gửi...');
+        $.post('@Url.Action("SendTest", "Notification", new { area = "Adm" })',
+            { testEmail: email, __RequestVerificationToken: token },
+            function (res) {
+                $('#testResult')
+                    .removeClass('alert-success alert-danger')
+                    .addClass('alert ' + (res.success ? 'alert-success' : 'alert-danger'))
+                    .html('<i class="fa fa-' + (res.success ? 'check' : 'times') + '"></i> ' + res.message)
+                    .show();
+                if (res.success) toastr.success(res.message);
+                else toastr.error(res.message);
+            }
+        ).always(function () {
+            btn.prop('disabled', false).html('<i class="fa fa-flask"></i> Gửi Email Test');
+        });
+    });
+
+    // Retry
+    $(document).on('click', '.btn-retry', function () {
+        var btn = $(this), id = btn.data('id');
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+        $.post('@Url.Action("Retry", "Notification", new { area = "Adm" })',
+            { reminderId: id, __RequestVerificationToken: token },
+            function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    btn.closest('tr').find('.label')
+                       .removeClass('label-danger').addClass('label-warning').text('PENDING');
+                    btn.remove();
+                } else {
+                    toastr.error(res.message);
+                    btn.prop('disabled', false).html('<i class="fa fa-refresh"></i> Retry');
+                }
+            }
+        );
+    });
+});
+    </script>
+}

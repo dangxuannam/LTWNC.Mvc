@@ -56,10 +56,28 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.3.3\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.AspNet, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.AspNet.0.3.0\lib\net45\Hangfire.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.Core, Version=1.8.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.Core.1.8.14\lib\net46\Hangfire.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.SqlServer, Version=1.8.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.SqlServer.1.8.14\lib\net451\Hangfire.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="JetBrains.Annotations, Version=4242.42.42.42, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.2025.2.4\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=4.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.4.2.3\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=4.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.4.2.3\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
     <Reference Include="PagedList, Version=1.17.0.0, Culture=neutral, PublicKeyToken=abbb863e9397c5e1, processorArchitecture=MSIL">
       <HintPath>..\packages\PagedList.1.17.0.0\lib\net40\PagedList.dll</HintPath>
     </Reference>
@@ -70,9 +88,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Users\Admin\OneDrive\Pictures\Lap trinh Web Nang Cao\Lap trinh Web Nang Cao\ThucHanh\Lab 2015\Libs\Portable.Licensing.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -156,12 +176,6 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\packages\Microsoft.Owin.4.2.2\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.4.2.2\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Owin.Security">
       <HintPath>..\packages\Microsoft.Owin.Security.4.2.2\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
@@ -190,6 +204,7 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\HangfireConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
@@ -200,6 +215,7 @@
     <Compile Include="Areas\Adm\Controllers\CheckoutController.cs" />
     <Compile Include="Areas\Adm\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Adm\Controllers\MessageController.cs" />
+    <Compile Include="Areas\Adm\Controllers\NotificationController.cs" />
     <Compile Include="Areas\Adm\Controllers\PaymentController.cs" />
     <Compile Include="Areas\Adm\Controllers\PictureController.cs" />
     <Compile Include="Areas\Adm\Controllers\ProductController.cs" />
@@ -217,10 +233,13 @@
     <Compile Include="Areas\Adm\Models\UserManagementViewModels.cs" />
     <Compile Include="Areas\Adm\Models\Userviewmodels.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Areas\Adm\Controllers\ContractController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Areas\Adm\Controllers\JobController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="DAL\AccountSeeder.cs" />
     <Compile Include="DAL\CategorySeeder.cs" />
+    <Compile Include="DAL\ContractRepository.cs" />
     <Compile Include="DAL\PictureSeeder.cs" />
     <Compile Include="DAL\ProductProfileSeeder.cs" />
     <Compile Include="DAL\ProductSeeder.cs" />
@@ -231,6 +250,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\LogHelper.cs" />
     <Compile Include="Migrations\202601160958056_Initial.cs" />
     <Compile Include="Migrations\202601160958056_Initial.Designer.cs">
       <DependentUpon>202601160958056_Initial.cs</DependentUpon>
@@ -307,6 +327,18 @@
     <Compile Include="Migrations\202602100237004_UpdateGit.Designer.cs">
       <DependentUpon>202602100237004_UpdateGit.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202603030127422_contract.cs" />
+    <Compile Include="Migrations\202603030127422_contract.Designer.cs">
+      <DependentUpon>202603030127422_contract.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202603030856429_JobRemind.cs" />
+    <Compile Include="Migrations\202603030856429_JobRemind.Designer.cs">
+      <DependentUpon>202603030856429_JobRemind.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202603060334008_AddRemindersTable.cs" />
+    <Compile Include="Migrations\202603060334008_AddRemindersTable.Designer.cs">
+      <DependentUpon>202603060334008_AddRemindersTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Account.cs" />
@@ -314,6 +346,12 @@
     <Compile Include="Models\AuthenticationViewModels.cs" />
     <Compile Include="Models\Cart.cs" />
     <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\Contract.cs" />
+    <Compile Include="Models\ContractFileMetadata.cs" />
+    <Compile Include="Models\ContractImportRow.cs" />
+    <Compile Include="Models\ContractPaymentSchedule.cs" />
+    <Compile Include="Models\ContractStatus.cs" />
+    <Compile Include="Models\HangfireJobLog.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\Order.cs" />
@@ -324,11 +362,15 @@
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\ProductHistory.cs" />
     <Compile Include="Models\ProductProfile.cs" />
+    <Compile Include="Models\Reminder.cs" />
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShippingRate.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\UserProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ContractJobService.cs" />
+    <Compile Include="Services\ExcelImportService.cs" />
+    <Compile Include="Services\FileUploadService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -488,6 +530,7 @@
     <Content Include="Images\dothethaonam.jpg" />
     <Content Include="Images\angular_logo.png" />
     <Content Include="Images\DSMHQ.jpg" />
+    <Content Include="Images\images.jpg" />
     <Content Include="Images\quanjeannam.jpg" />
     <Content Include="Images\thoitrangnam.jpg" />
     <Content Include="Images\close.png" />
@@ -656,6 +699,11 @@
     <Content Include="Areas\Adm\Views\Order\Edit.cshtml" />
     <Content Include="Areas\Adm\Views\Checkout\Index.cshtml" />
     <Content Include="Areas\Adm\Views\Checkout\OrderSuccess.cshtml" />
+    <Content Include="Areas\Adm\Views\Contract\ImportPreview.cshtml" />
+    <Content Include="Areas\Adm\Views\Contract\ImportResult.cshtml" />
+    <Content Include="Areas\Adm\Views\Contract\Index.cshtml" />
+    <Content Include="Areas\Adm\Views\Contract\Detail.cshtml" />
+    <Content Include="Areas\Adm\Views\Notification\Index.cshtml" />
     <None Include="Areas\Adm\Views\Order\Overview.cshtml" />
     <Content Include="Areas\Adm\Views\Order\Shipping.cshtml" />
     <Content Include="Areas\Adm\Views\Order\Unship.cshtml" />
@@ -1274,7 +1322,7 @@
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\SendCode.cshtml" />
-    <Content Include="Views\Account\VerifyCode.cshtml" />
+    <Content Include="Views\Account\VerifyOtp.cshtml" />
     <Content Include="Views\Manage\AddPhoneNumber.cshtml" />
     <Content Include="Views\Manage\ChangePassword.cshtml" />
     <Content Include="Views\Manage\Index.cshtml" />
@@ -1310,6 +1358,9 @@
     <Content Include="Scripts\umd\popper.js.map" />
     <Content Include="Scripts\umd\popper.min.js.map" />
     <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Areas\Adm\Views\Contract\ImportExcel.cshtml" />
+    <Content Include="Areas\Adm\Views\Job\Index.cshtml" />
+    <Content Include="Areas\Adm\Views\Job\Reminders.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -1411,6 +1462,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202602100237004_UpdateGit.resx">
       <DependentUpon>202602100237004_UpdateGit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202603030127422_contract.resx">
+      <DependentUpon>202603030127422_contract.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202603030856429_JobRemind.resx">
+      <DependentUpon>202603030856429_JobRemind.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202603060334008_AddRemindersTable.resx">
+      <DependentUpon>202603060334008_AddRemindersTable.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,156 @@
+﻿@model IEnumerable<CheapDeal.WebApp.Models.HangfireJobLog>
+@{
+    ViewBag.Title = "Background Jobs";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Background Jobs</h2>
+        <ol class="breadcrumb">
+            <li><a href="/">Trang chủ</a></li>
+            <li class="active">Background Jobs</li>
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Nút điều khiển -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-play-circle"></i> Chạy Job Thủ Công</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-inline">
+                        <div class="form-group" style="margin-right:15px;">
+                            <label>Số ngày quét: </label>
+                            <input type="number" id="daysAhead" class="form-control"
+                                   value="7" min="1" max="30" style="width:80px; margin-left:8px;" />
+                        </div>
+                        <button class="btn btn-primary" onclick="runJob('daily')">
+                            <i class="fa fa-calendar"></i> Chạy Daily Job
+                        </button>
+                        &nbsp;
+                        <button class="btn btn-warning" onclick="runJob('overdue')">
+                            <i class="fa fa-exclamation-triangle"></i> Mark Overdue
+                        </button>
+                        &nbsp;
+                        <button class="btn btn-success" onclick="runJob('reminders')">
+                            <i class="fa fa-bell"></i> Scan Reminders
+                        </button>
+                        &nbsp;
+                        <a href="/hangfire" target="_blank" class="btn btn-info">
+                            <i class="fa fa-external-link"></i> Mở Hangfire Dashboard
+                        </a>
+                    </div>
+                    <div id="jobMessage" style="margin-top:10px; display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng log -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-list"></i> Lịch Sử Chạy Job (20 gần nhất)</h5>
+                    <a href="@Url.Action("Reminders", "Job", new { area = "Adm" })"
+                       class="btn btn-xs btn-default pull-right" style="margin-top:3px;">
+                        Xem Reminders →
+                    </a>
+                </div>
+                <div class="ibox-content">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Job Name</th>
+                                <th>Bắt đầu</th>
+                                <th>Kết thúc</th>
+                                <th>Thời gian</th>
+                                <th>Status</th>
+                                <th>Rows</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        Chưa có log nào. Bấm "Chạy Daily Job" để test.
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var log in Model)
+                            {
+                                <tr class="@(log.Status == "FAILED" ? "danger" : "")">
+                                    <td><strong>@log.JobName</strong></td>
+                                    <td>@log.StartTime.ToString("dd/MM HH:mm:ss")</td>
+                                    <td>@(log.EndTime.HasValue ? log.EndTime.Value.ToString("HH:mm:ss") : "-")</td>
+                                    <td>@log.DurationSeconds.ToString("F1")s</td>
+                                    <td>
+                                        <span class="label label-@(log.Status == "SUCCESS" ? "primary" : log.Status == "RUNNING" ? "warning" : "danger")">
+                                            @log.Status
+                                        </span>
+                                    </td>
+                                    <td>@(log.AffectedRows.HasValue ? log.AffectedRows.ToString() : "-")</td>
+                                    <td><small>@log.Message</small></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+    function runJob(type) {
+        var days = $('#daysAhead').val();
+        var btnText = type === 'daily' ? 'Daily Job' :
+                      type === 'overdue' ? 'Mark Overdue' : 'Scan Reminders';
+
+        // Hiện thông báo đang xử lý
+        $('#jobMessage')
+            .removeClass('alert-success alert-danger')
+            .addClass('alert alert-info')
+            .html('<i class="fa fa-spinner fa-spin"></i> Đang đưa <strong>' + btnText + '</strong> vào queue...')
+            .show();
+
+        $.ajax({
+            url: '@Url.Action("RunNow", "Job", new { area = "Adm" })',
+            type: 'POST',
+            data: { jobType: type, daysAhead: days },
+            success: function (res) {
+                if (res.success) {
+                    $('#jobMessage')
+                        .removeClass('alert-info alert-danger')
+                        .addClass('alert alert-success')
+                        .html('<i class="fa fa-check"></i> ' + res.message + ' <small>(Tự reload sau 3 giây...)</small>');
+
+                    // Reload sau 3 giây để thấy log mới
+                    setTimeout(function () { location.reload(); }, 3000);
+                } else {
+                    $('#jobMessage')
+                        .removeClass('alert-info alert-success')
+                        .addClass('alert alert-danger')
+                        .html('<i class="fa fa-times"></i> Lỗi: ' + res.message);
+                }
+            },
+            error: function () {
+                $('#jobMessage')
+                    .removeClass('alert-info alert-success')
+                    .addClass('alert alert-danger')
+                    .html('<i class="fa fa-times"></i> Không thể kết nối server.');
+            }
+        });
+    }
+    </script>
+}

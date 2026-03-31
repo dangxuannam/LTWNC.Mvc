@@ -50,6 +50,7 @@
     <Compile Include="DataAnnotations\ImageSizeAttribute.cs" />
     <Compile Include="DataAnnotations\ImageValidationResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

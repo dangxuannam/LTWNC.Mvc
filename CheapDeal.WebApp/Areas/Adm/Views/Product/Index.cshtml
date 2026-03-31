@@ -27,15 +27,6 @@
                 @Html.Partial("_ProductList", Model)
             </div>
         </div>
-        @foreach (var item in Model)
-        {
-            <div class="product-item">
-
-                <button class="btn btn-primary btn-add-to-cart" data-product-id="@item.ProductId">
-                    <i class="fas fa-cart-plus"></i> Thêm vào giỏ
-                </button>
-            </div>
-        }
     </div>
 </div>
 

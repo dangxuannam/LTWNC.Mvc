@@ -1,0 +1,204 @@
+﻿@model List<CheapDeal.WebApp.Models.ContractImportRow>
+@{
+    ViewBag.Title = "Xem trước Import";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+    var validRows = Model.Where(r => r.IsValid).ToList();
+    var invalidRows = Model.Where(r => !r.IsValid).ToList();
+}
+
+<h2><i class="fa fa-eye"></i> Xem trước dữ liệu Import</h2>
+<hr />
+
+@* ── Thống kê ─────────────────────────────────────────────── *@
+<div class="row text-center">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h2>@Model.Count</h2>
+                <p><strong>Tổng dòng</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-success">
+            <div class="panel-body">
+                <h2 class="text-success">@validRows.Count</h2>
+                <p><strong>Hợp lệ</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-danger">
+            <div class="panel-body">
+                <h2 class="text-danger">@invalidRows.Count</h2>
+                <p><strong>Lỗi</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Dòng lỗi ─────────────────────────────────────────────── *@
+@if (invalidRows.Any())
+{
+    <div class="alert alert-danger">
+        <strong><i class="fa fa-times-circle"></i> @invalidRows.Count dòng lỗi</strong>
+        — sẽ bị bỏ qua:
+        <ul>
+            @foreach (var row in invalidRows)
+            {
+                <li>Dòng @row.RowNumber: <code>@row.ErrorMessage</code></li>
+            }
+        </ul>
+    </div>
+}
+
+@* ── Dòng hợp lệ ─────────────────────────────────────────── *@
+@if (validRows.Any())
+{
+    <div class="alert alert-success">
+        <strong><i class="fa fa-check-circle"></i> @validRows.Count dòng hợp lệ</strong>
+        sẽ được import vào hệ thống.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped" id="previewTable">
+            <thead style="background:#1E3A8A; color:white">
+                <tr>
+                    <th>Dòng</th>
+                    <th>Mã HĐ</th>
+                    <th>Email KH</th>
+                    <th>Ngày ký</th>
+                    <th>Bắt đầu</th>
+                    <th>Kết thúc</th>
+                    <th class="text-right">Tổng tiền (đ)</th>
+                    <th class="text-center">Số kỳ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in validRows)
+                {
+                    <tr>
+                        <td class="text-center">@row.RowNumber</td>
+                        <td><strong>@row.ContractCode</strong></td>
+                        <td>@row.CustomerEmail</td>
+                        <td>@row.ContractDate.ToString("dd/MM/yyyy")</td>
+                        <td>@row.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>@row.EndDate.ToString("dd/MM/yyyy")</td>
+                        <td class="text-right">@row.TotalAmount.ToString("N0")</td>
+                        <td class="text-center">@row.InstallmentCount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ── Form xác nhận: viết HTML thuần để tránh lỗi @using trong @if ── *@
+    <form id="confirmForm" method="post"
+          action="@Url.Action("ConfirmImport", "Contract", new { area = "Adm" })">
+        @Html.AntiForgeryToken()
+        <div id="confirmButtons">
+            <button type="submit" id="btnConfirm" class="btn btn-success btn-lg">
+                <i class="fa fa-check"></i> Xác nhận import @validRows.Count hợp đồng
+            </button>
+            <a href="@Url.Action("ImportExcel", "Contract", new { area = "Adm" })"
+               class="btn btn-default btn-lg">
+                <i class="fa fa-times"></i> Hủy
+            </a>
+        </div>
+    </form>
+}
+else
+{
+    <div class="alert alert-warning">
+        <i class="fa fa-exclamation-triangle"></i>
+        Không có dòng hợp lệ nào để import.
+    </div>
+    <a href="@Url.Action("ImportExcel", "Contract", new { area = "Adm" })"
+       class="btn btn-default">
+        <i class="fa fa-arrow-left"></i> Quay lại
+    </a>
+}
+
+@section Scripts {
+    <script>
+$(function () {
+
+    // ── Chặn submit form mặc định, dùng AJAX thay thế ──────
+    $('#confirmForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var btn   = $('#btnConfirm');
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        btn.prop('disabled', true)
+           .html('<i class="fa fa-spinner fa-spin"></i> Đang import...');
+
+        $.ajax({
+            url:  '@Url.Action("ConfirmImportAjax", "Contract", new { area = "Adm" })',
+            type: 'POST',
+            data: { __RequestVerificationToken: token },
+            success: function (res) {
+                if (res.success) {
+                    renderResult(res.result);
+                } else {
+                    btn.prop('disabled', false)
+                       .html('<i class="fa fa-check"></i> Xác nhận import');
+                    showAlert('danger', res.message);
+                }
+            },
+            error: function (xhr) {
+                btn.prop('disabled', false)
+                   .html('<i class="fa fa-check"></i> Xác nhận import');
+                showAlert('danger', 'Lỗi kết nối: ' + xhr.statusText);
+            }
+        });
+    });
+
+    // ── Render kết quả AJAX thay thế nội dung trang ────────
+    function renderResult(r) {
+        var rate = r.totalRows > 0
+            ? Math.round(r.successCount / r.totalRows * 100) : 0;
+
+        var errHtml = '';
+        if (r.errors && r.errors.length > 0) {
+            errHtml += '<div class="panel panel-warning">' +
+                       '<div class="panel-heading"><strong>Chi tiết lỗi</strong></div>' +
+                       '<div class="panel-body"><ul>';
+            $.each(r.errors, function (i, e) {
+                errHtml += '<li>' + e + '</li>';
+            });
+            errHtml += '</ul></div></div>';
+        }
+
+        var html =
+            '<h3><i class="fa fa-bar-chart"></i> Kết quả Import</h3><hr />' +
+            '<div class="row text-center">' +
+              '<div class="col-md-4"><div class="panel panel-default"><div class="panel-body">' +
+                '<h2>' + r.totalRows + '</h2><p>Tổng dòng</p></div></div></div>' +
+              '<div class="col-md-4"><div class="panel panel-success"><div class="panel-body">' +
+                '<h2 class="text-success">' + r.successCount + '</h2><p>Thành công</p></div></div></div>' +
+              '<div class="col-md-4"><div class="panel panel-danger"><div class="panel-body">' +
+                '<h2 class="text-danger">' + r.errorCount + '</h2><p>Lỗi</p></div></div></div>' +
+            '</div>' +
+            '<div class="progress" style="height:22px">' +
+              '<div class="progress-bar progress-bar-success" style="width:' + rate + '%;line-height:22px">' +
+                rate + '% thành công</div></div><br />' +
+            errHtml +
+            '<a href="@Url.Action("Index","Contract", new { area = "Adm" })" class="btn btn-primary">' +
+              '<i class="fa fa-list"></i> Về danh sách hợp đồng</a> ' +
+            '<a href="@Url.Action("ImportExcel","Contract", new { area = "Adm" })" class="btn btn-default">' +
+              '<i class="fa fa-upload"></i> Import tiếp</a>';
+
+        $('#confirmButtons').closest('form').replaceWith(html);
+        $('h2:first, hr:first, .row:first, .alert, .table-responsive').remove();
+        $('html, body').animate({ scrollTop: 0 }, 300);
+    }
+
+    function showAlert(type, msg) {
+        var el = $('<div class="alert alert-' + type + '">' + msg + '</div>');
+        $('#confirmButtons').before(el);
+        setTimeout(function () { el.fadeOut(300, function () { $(this).remove(); }); }, 4000);
+    }
+});
+    </script>
+}

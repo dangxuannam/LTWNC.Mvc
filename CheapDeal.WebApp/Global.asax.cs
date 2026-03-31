@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -17,6 +18,12 @@ namespace CheapDeal.WebApp
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+            var connStrEntry = ConfigurationManager.ConnectionStrings["ShopDbContext"];
+            if (connStrEntry != null)
+            {
+                HangfireConfig.Register(connStrEntry.ConnectionString);
+            }
+
         }
     }
 }

@@ -1,0 +1,117 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Contract Flowchart Full Fixed">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Web UI -->
+        <mxCell id="webui" value="Web UI&#xa;User nhập dữ liệu, upload file" style="rounded=1;fillColor=#dae8fc" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- IIS Server -->
+        <mxCell id="iis" value="IIS Server" style="swimlane;fillColor=#f5f5f5" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="900" height="900" as="geometry"/>
+        </mxCell>
+
+        <!-- MVC -->
+        <mxCell id="mvc" value="ASP.NET MVC App&#xa;Controller + Service + Repository&#xa;Note: ContractRepository, PaymentRepository, ReminderRepository" style="rounded=1;fillColor=#e1d5e7" vertex="1" parent="iis">
+          <mxGeometry x="40" y="40" width="360" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Hangfire -->
+        <mxCell id="hangfire" value="Hangfire Job&#xa;Background Task quét nợ" style="rounded=1;fillColor=#fff2cc" vertex="1" parent="iis">
+          <mxGeometry x="450" y="40" width="320" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Database -->
+        <mxCell id="db" value="MSSQL Database&#xa;Tables: Contracts, Payments, Reminders" style="rounded=1;fillColor=#d5e8d4" vertex="1" parent="1">
+          <mxGeometry x="1250" y="300" width="300" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- SMTP -->
+        <mxCell id="smtp" value="SMTP Email Server" style="rounded=1;fillColor=#fad7ac" vertex="1" parent="1">
+          <mxGeometry x="1250" y="450" width="300" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Flow -->
+        <mxCell id="import" value="Import Excel / Upload PDF" style="rounded=1;fillColor=#dae8fc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="200" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="validate" value="Dữ liệu hợp lệ?" style="rhombus;fillColor=#fff2cc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="280" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="error" value="Hiển thị lỗi" style="rounded=1;fillColor=#f8cecc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="380" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="createContract" value="Create Contract" style="rounded=1;fillColor=#dae8fc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="460" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="autoSchedule" value="Auto-generate Payment Schedule" style="rounded=1;fillColor=#fff2cc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="540" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="saveDB" value="Save to Database" style="rounded=1;fillColor=#dae8fc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="620" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="createScheduleDecision" value="Tạo Payment Schedule?" style="rhombus;fillColor=#fff2cc" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="700" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="generateInstallments" value="Generate Installments" style="rounded=1;fillColor=#d5e8d4" vertex="1" parent="mvc">
+          <mxGeometry x="60" y="800" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Hangfire flow -->
+        <mxCell id="scanOverdue" value="Scan Overdue Payments" style="rounded=1;fillColor=#fff2cc" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="200" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="hasOverdue" value="Có khoản quá hạn?" style="rhombus;fillColor=#f8cecc" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="280" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sendEmail" value="Send Reminder Email" style="rounded=1;fillColor=#fad7ac" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="380" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="emailSuccess" value="Gửi thành công?" style="rhombus;fillColor=#fff2cc" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="460" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="logFail" value="Insert vào bảng Reminders (Log lỗi)" style="rounded=1;fillColor=#f8cecc" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="560" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="logSuccess" value="Insert vào bảng Reminders (Log thành công)" style="rounded=1;fillColor=#d5e8d4" vertex="1" parent="hangfire">
+          <mxGeometry x="30" y="640" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="e1" edge="1" parent="1" source="webui" target="mvc" value="HTTPS Request"/>
+        <mxCell id="e2" edge="1" parent="1" source="mvc" target="webui" value="HTML Response"/>
+
+        <mxCell id="e3" edge="1" parent="mvc" source="import" target="validate" value="Submit Data"/>
+        <mxCell id="e4" edge="1" parent="mvc" source="validate" target="error" value="No"/>
+        <mxCell id="e5" edge="1" parent="mvc" source="validate" target="createContract" value="Yes"/>
+        <mxCell id="e6" edge="1" parent="mvc" source="createContract" target="autoSchedule"/>
+        <mxCell id="e7" edge="1" parent="mvc" source="autoSchedule" target="saveDB"/>
+        <mxCell id="e8" edge="1" parent="mvc" source="saveDB" target="createScheduleDecision"/>
+        <mxCell id="e9" edge="1" parent="mvc" source="createScheduleDecision" target="generateInstallments" value="Yes"/>
+
+        <mxCell id="e10" edge="1" parent="1" source="mvc" target="hangfire" value="Schedule Job (Cron 8h/ngày)"/>
+        <mxCell id="e11" edge="1" parent="1" source="hangfire" target="db" value="Read Overdue Payments"/>
+        <mxCell id="e12" edge="1" parent="1" source="hangfire" target="smtp" value="Send Email Notification"/>
+        <mxCell id="e13" edge="1" parent="1" source="mvc" target="db" value="EF6 / SQL Query"/>
+        <mxCell id="e14" edge="1" parent="1" source="db" target="mvc" value="Result Set"/>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

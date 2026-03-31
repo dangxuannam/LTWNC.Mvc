@@ -1,0 +1,220 @@
+﻿@model CheapDeal.WebApp.Services.ExcelImportResult
+@{
+    ViewBag.Title = "Kết quả Import";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+
+    // Tính tỉ lệ thành công — tính sẵn trong @{} tránh lỗi trong attribute
+    var successRate = Model.TotalRows > 0
+        ? (int)Math.Round((double)Model.SuccessCount / Model.TotalRows * 100)
+        : 0;
+
+    // Chuỗi width dùng trong style attribute
+    var progressWidth = successRate + "%";
+}
+
+<h2><i class="fa fa-bar-chart"></i> Kết quả Import Hợp Đồng</h2>
+<hr />
+
+@* ── Thống kê ─────────────────────────────────────────────── *@
+<div class="row text-center">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <h1 class="text-muted">@Model.TotalRows</h1>
+                <p><strong>Tổng số dòng</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-success">
+            <div class="panel-body">
+                <h1 class="text-success">@Model.SuccessCount</h1>
+                <p><strong>Import thành công</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-danger">
+            <div class="panel-body">
+                <h1 class="text-danger">@Model.ErrorCount</h1>
+                <p><strong>Lỗi / Bỏ qua</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Progress bar — FIX: tính width sẵn vào biến C#, không inline Razor trong style ── *@
+<div class="progress" style="height:24px; margin-bottom:20px">
+    <div class="progress-bar progress-bar-success"
+         role="progressbar"
+         style="width:@progressWidth; font-size:14px; line-height:24px">
+        @successRate% thành công
+    </div>
+</div>
+
+@* ── Countdown tự động redirect ───────────────────────────── *@
+@if (Model.SuccessCount > 0)
+{
+    <div id="redirectNotice" class="alert alert-info">
+        <i class="fa fa-info-circle"></i>
+        Tự động chuyển về danh sách sau
+        <strong id="countdown">5</strong> giây...
+        <a href="@Url.Action("Index", "Contract", new { area = "Adm" })"
+           class="btn btn-xs btn-primary" style="margin-left:8px">
+            Chuyển ngay
+        </a>
+        <button id="btnCancelRedirect" type="button"
+                class="btn btn-xs btn-default" style="margin-left:4px">
+            Hủy
+        </button>
+    </div>
+}
+
+@* ── Chi tiết lỗi ─────────────────────────────────────────── *@
+@if (Model.Errors != null && Model.Errors.Any())
+{
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <strong>
+                <i class="fa fa-exclamation-triangle"></i>
+                Chi tiết lỗi (@Model.Errors.Count)
+            </strong>
+            <button type="button" class="btn btn-xs btn-default pull-right"
+                    id="btnToggleErrors">
+                <i class="fa fa-eye"></i> Ẩn/Hiện
+            </button>
+        </div>
+        <div class="panel-body" id="errorList">
+            <ul class="list-unstyled" style="margin-bottom:0">
+                @foreach (var err in Model.Errors)
+                {
+                    <li>
+                        <i class="fa fa-times-circle text-danger"></i>
+                        @err
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@* ── Nút hành động ────────────────────────────────────────── *@
+<div style="margin-top:16px">
+    <a href="@Url.Action("Index", "Contract", new { area = "Adm" })"
+       class="btn btn-primary">
+        <i class="fa fa-list"></i> Về danh sách hợp đồng
+    </a>
+    <a href="@Url.Action("ImportExcel", "Contract", new { area = "Adm" })"
+       class="btn btn-default">
+        <i class="fa fa-upload"></i> Import thêm
+    </a>
+    @if (Model.Errors != null && Model.Errors.Any())
+    {
+        <button type="button" id="btnExportErrors" class="btn btn-warning">
+            <i class="fa fa-download"></i> Xuất danh sách lỗi (.txt)
+        </button>
+    }
+</div>
+
+@section Scripts {
+    <script>
+$(function () {
+
+    // ── Countdown tự động redirect ──────────────────────────
+    @if (Model.SuccessCount > 0)
+    {
+        <text>
+        var countdownVal = 5;
+        var redirectUrl  = '@Url.Action("Index", "Contract", new { area = "Adm" })';
+        var timer = setInterval(function () {
+            countdownVal--;
+            $('#countdown').text(countdownVal);
+            if (countdownVal <= 0) {
+                clearInterval(timer);
+                window.location.href = redirectUrl;
+            }
+        }, 1000);
+
+        $('#btnCancelRedirect').on('click', function () {
+            clearInterval(timer);
+            $('#redirectNotice').fadeOut(200);
+        });
+        </text>
+    }
+
+    // ── Ẩn/Hiện danh sách lỗi ──────────────────────────────
+    $('#btnToggleErrors').on('click', function () {
+        $('#errorList').slideToggle(200);
+    });
+
+    // ── Xuất lỗi ra file .txt ───────────────────────────────
+    $('#btnExportErrors').on('click', function () {
+        var lines = [
+            'BÁO CÁO LỖI IMPORT HỢP ĐỒNG',
+            'Ngày: ' + new Date().toLocaleString('vi-VN'),
+            'Tổng: @Model.TotalRows  |  Thành công: @Model.SuccessCount  |  Lỗi: @Model.ErrorCount',
+            '------------------------------------------------'
+        ];
+        @if (Model.Errors != null)
+        {
+            foreach (var err in Model.Errors)
+            {
+                // Escape ký tự đặc biệt trong C# string để an toàn trong JS
+                var safeErr = err
+                    .Replace("\\", "\\\\")
+                    .Replace("'",  "\\'")
+                    .Replace("\r", "")
+                    .Replace("\n", " ");
+                <text>lines.push('@safeErr');</text>
+            }
+        }
+
+        var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'BaoCaoLoi_Import_@(DateTime.Now.ToString("yyyyMMdd")).txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // ── Toast thông báo khi trang load xong ────────────────
+    @if (Model.SuccessCount > 0)
+    {
+        <text>showToast('success', 'Import hoàn tất! <strong>@Model.SuccessCount</strong> hợp đồng đã được tạo.');</text>
+    }
+    else
+    {
+        <text>showToast('warning', 'Không có hợp đồng nào được import thành công.');</text>
+    }
+
+    function showToast(type, msg) {
+        var bg = type === 'success' ? '#28a745' : '#ffc107';
+        var fg = type === 'success' ? '#fff'     : '#333';
+        var toast = $('<div>')
+            .css({
+                position:    'fixed',
+                top:         '20px',
+                right:       '20px',
+                zIndex:      9999,
+                background:  bg,
+                color:       fg,
+                padding:     '12px 20px',
+                borderRadius:'6px',
+                boxShadow:   '0 4px 12px rgba(0,0,0,0.2)',
+                maxWidth:    '340px',
+                fontSize:    '14px'
+            })
+            .html('<i class="fa fa-' + (type === 'success' ? 'check' : 'exclamation') +
+                  '-circle"></i> ' + msg)
+            .appendTo('body');
+
+        setTimeout(function () {
+            toast.fadeOut(400, function () { $(this).remove(); });
+        }, 3500);
+    }
+});
+    </script>
+}

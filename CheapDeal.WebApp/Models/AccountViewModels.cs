@@ -54,5 +54,4 @@ namespace CheapDeal.WebApp.Models
         [Display(Name = "Khóa tài khoản")]
         public bool LockoutEnabled { get; set; }
     }
-
 }

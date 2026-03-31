@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CheapDeal.WebApp.Models
 {
-
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
@@ -24,7 +23,7 @@ namespace CheapDeal.WebApp.Models
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Tên đăng nhập phải từ 3-50 ký tự")]
         [Display(Name = "Tên đăng nhập")]
-        public string UserName { get; set; }  // ← THÊM DÒNG NÀY
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập email")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
@@ -53,8 +52,6 @@ namespace CheapDeal.WebApp.Models
 
     public class ResetPasswordViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập email")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
@@ -89,6 +86,7 @@ namespace CheapDeal.WebApp.Models
         [Display(Name = "Ghi nhớ đăng nhập?")]
         public bool RememberMe { get; set; }
     }
+
     public class SendCodeViewModel
     {
         public string SelectedProvider { get; set; }
@@ -104,8 +102,21 @@ namespace CheapDeal.WebApp.Models
         [Display(Name = "Email")]
         public string Email { get; set; }
     }
+
     public class ExternalLoginListViewModel
     {
         public string ReturnUrl { get; set; }
+    }
+
+    // ===== CLASS MỚI - THÊM CHO CHỨC NĂNG OTP =====
+    public class VerifyOtpViewModel
+    {
+        [Required]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Mã OTP không được để trống")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Mã OTP phải đúng 6 chữ số")]
+        [Display(Name = "Mã OTP")]
+        public string Otp { get; set; }
     }
 }

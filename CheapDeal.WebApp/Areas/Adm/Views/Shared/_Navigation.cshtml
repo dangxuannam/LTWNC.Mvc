@@ -1,11 +1,15 @@
 ﻿<style>
+    /* ── Sidebar ─────────────────────────────────────────── */
     #side-menu {
         width: 100%;
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
 
+        /* Top-level */
         #side-menu > li {
             border-bottom: 1px solid #293846;
-            position: relative;
         }
 
             #side-menu > li > a {
@@ -14,15 +18,9 @@
                 display: block;
                 text-decoration: none;
                 border-left: 4px solid transparent;
-                transition: all 0.3s;
+                transition: all 0.25s;
                 position: relative;
             }
-
-                #side-menu > li > a:hover {
-                    color: #fff;
-                    background: #293846;
-                    border-left: 4px solid #19aa8d;
-                }
 
                 #side-menu > li > a i {
                     margin-right: 10px;
@@ -37,21 +35,31 @@
                     transform: translateY(-50%);
                     font-size: 12px;
                     color: #a7b1c2;
-                    transition: transform 0.3s;
+                    transition: transform 0.25s, color 0.25s;
                 }
 
-            #side-menu > li:hover > a .arrow {
-                transform: translateY(-50%) rotate(90deg);
-                color: #19aa8d;
-            }
+                #side-menu > li > a:hover,
+                #side-menu > li.active > a {
+                    color: #fff;
+                    background: #293846;
+                    border-left-color: #19aa8d;
+                }
+
+                    #side-menu > li:hover > a .arrow,
+                    #side-menu > li.active > a .arrow {
+                        transform: translateY(-50%) rotate(90deg);
+                        color: #19aa8d;
+                    }
+
+    /* Submenu */
     .nav-second-level {
         background: #1c2b36;
-        padding-left: 0;
-        display: none;
         list-style: none;
-        position: relative;
-        width: 100%;
-        z-index: 1;
+        padding: 0;
+        margin: 0;
+        display: none;
+        max-height: 400px;
+        overflow-y: auto;
     }
 
     #side-menu > li:hover > .nav-second-level {
@@ -59,9 +67,6 @@
     }
 
     .nav-second-level li {
-        margin: 0;
-        padding: 0;
-        width: 100%;
         border-top: 1px solid #253444;
     }
 
@@ -73,13 +78,13 @@
             color: #a7b1c2;
             padding: 10px 15px 10px 45px;
             display: block;
-            text-decoration: none;
             font-size: 13px;
+            text-decoration: none;
             transition: all 0.2s;
             position: relative;
         }
 
-            .nav-second-level li a:before {
+            .nav-second-level li a::before {
                 content: "›";
                 position: absolute;
                 left: 30px;
@@ -92,37 +97,50 @@
                 padding-left: 50px;
             }
 
-                .nav-second-level li a:hover:before {
+                .nav-second-level li a:hover::before {
                     color: #19aa8d;
                 }
 
-    #side-menu > li {
-        transition: all 0.3s;
+    /* Scrollbar */
+    .nav-second-level::-webkit-scrollbar {
+        width: 4px;
     }
 
-    .nav-second-level {
-        max-height: 400px;
-        overflow-y: auto;
+    .nav-second-level::-webkit-scrollbar-thumb {
+        background: #19aa8d;
+        border-radius: 3px;
     }
 
-        .nav-second-level::-webkit-scrollbar {
-            width: 5px;
+    /* Badge */
+    .nav-badge {
+        font-size: 10px;
+        padding: 2px 5px;
+        border-radius: 8px;
+        margin-left: 5px;
+        font-weight: 600;
+        vertical-align: middle;
+        background: #19aa8d;
+        color: #fff;
+    }
+
+        .nav-badge.new {
+            background: #ed5565;
         }
 
-        .nav-second-level::-webkit-scrollbar-thumb {
-            background: #19aa8d;
-            border-radius: 3px;
+        .nav-badge.soon {
+            background: #6B7280;
         }
 </style>
 
 <nav class="navbar-default navbar-static-side" role="navigation">
     <div class="sidebar-collapse">
         <ul id="side-menu" class="nav">
+
             <li class="nav-header">
                 @Html.Partial("_ProfilePartial")
             </li>
 
-
+            @* Trang chủ *@
             <li>
                 <a href="@Url.Action("Index", "Dashboard")">
                     <i class="fa fa-th-large"></i>
@@ -130,6 +148,7 @@
                 </a>
             </li>
 
+            @* Loại mặt hàng *@
             <li>
                 <a href="#">
                     <i class="fa fa-sitemap"></i>
@@ -137,13 +156,13 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Category")">Xem danh mục</a></li>
+                    <li><a href="@Url.Action("Index",  "Category")">Xem danh mục</a></li>
                     <li><a href="@Url.Action("Create", "Category")">Tạo danh mục mới</a></li>
-                    <li><a href="@Url.Action("List", "Category")">Thống kê SL hàng</a></li>
+                    <li><a href="@Url.Action("List",   "Category")">Thống kê SL hàng</a></li>
                 </ul>
             </li>
 
-            <!-- Nhà cung cấp -->
+            @* Nhà cung cấp *@
             <li>
                 <a href="#">
                     <i class="fa fa-university"></i>
@@ -151,12 +170,12 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Supplier")">Xem nhà cung cấp</a></li>
+                    <li><a href="@Url.Action("Index",  "Supplier")">Xem nhà cung cấp</a></li>
                     <li><a href="@Url.Action("Create", "Supplier")">Thêm nhà cung cấp</a></li>
                 </ul>
             </li>
 
-            <!-- Quản lý Sản phẩm -->
+            @* Quản lý Sản phẩm *@
             <li>
                 <a href="#">
                     <i class="fa fa-gift"></i>
@@ -164,13 +183,13 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Product")">Xem danh mục</a></li>
-                    <li><a href="@Url.Action("Create", "Product")">Thêm sản phẩm</a></li>
+                    <li><a href="@Url.Action("Index",      "Product")">Xem danh sách</a></li>
+                    <li><a href="@Url.Action("Create",     "Product")">Thêm sản phẩm</a></li>
                     <li><a href="@Url.Action("OutOfStock", "Product")">Sản phẩm hết hàng</a></li>
                 </ul>
             </li>
 
-            <!-- Công ty giao hàng -->
+            @* Công ty giao hàng *@
             <li>
                 <a href="#">
                     <i class="fa fa-truck"></i>
@@ -178,15 +197,15 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Shipper")">Danh sách công ty</a></li>
-                    <li><a href="@Url.Action("Create", "Shipper")">Thêm công ty mới</a></li>
-                    <li><a href="@Url.Action("Rates", "Shipper")">Bảng giá vận chuyển</a></li>
-                    <li><a href="@Url.Action("TrackOrders", "Shipper")">Theo dõi đơn vận</a></li>
+                    <li><a href="@Url.Action("Index",             "Shipper")">Danh sách công ty</a></li>
+                    <li><a href="@Url.Action("Create",            "Shipper")">Thêm công ty mới</a></li>
+                    <li><a href="@Url.Action("Rates",             "Shipper")">Bảng giá vận chuyển</a></li>
+                    <li><a href="@Url.Action("TrackOrders",       "Shipper")">Theo dõi đơn vận</a></li>
                     <li><a href="@Url.Action("PerformanceReport", "Shipper")">Báo cáo hiệu suất</a></li>
                 </ul>
             </li>
 
-            <!-- Hình ảnh sản phẩm -->
+            @* Hình ảnh sản phẩm *@
             <li>
                 <a href="#">
                     <i class="fa fa-image"></i>
@@ -194,14 +213,13 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Picture")">Xem hình ảnh</a></li>
-                    <li><a href="@Url.Action("Upload", "Picture")">Upload hình ảnh</a></li>
+                    <li><a href="@Url.Action("Index",   "Picture")">Xem hình ảnh</a></li>
+                    <li><a href="@Url.Action("Upload",  "Picture")">Upload hình ảnh</a></li>
                     <li><a href="@Url.Action("Library", "Picture")">Thư viện ảnh</a></li>
-
                 </ul>
             </li>
 
-            <!-- Quản lý Người dùng -->
+            @* Quản lý Người dùng *@
             <li>
                 <a href="#">
                     <i class="fa fa-users"></i>
@@ -209,15 +227,15 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "User")">Danh sách người dùng</a></li>
-                    <li><a href="@Url.Action("Create", "User")">Thêm người dùng mới</a></li>
-                    <li><a href="@Url.Action("Admin", "User")">Quản trị viên</a></li>
-                    <li><a href="@Url.Action("Roles", "User")">Phân quyền</a></li>
+                    <li><a href="@Url.Action("Index",    "User")">Danh sách người dùng</a></li>
+                    <li><a href="@Url.Action("Create",   "User")">Thêm người dùng mới</a></li>
+                    <li><a href="@Url.Action("Admin",    "User")">Quản trị viên</a></li>
+                    <li><a href="@Url.Action("Roles",    "User")">Phân quyền</a></li>
                     <li><a href="@Url.Action("Activity", "User")">Nhật ký hoạt động</a></li>
                 </ul>
             </li>
 
-            <!-- Đơn đặt hàng -->
+            @* Đơn đặt hàng *@
             <li>
                 <a href="#">
                     <i class="fa fa-shopping-cart"></i>
@@ -225,27 +243,95 @@
                     <span class="fa arrow"></span>
                 </a>
                 <ul class="nav nav-second-level">
-                    <li><a href="@Url.Action("Index", "Order")">Xem đơn hàng</a></li>
-                    <li><a href="@Url.Action("Unship", "Order")">Đơn hàng chưa giao</a></li>
+                    <li><a href="@Url.Action("Index",    "Order")">Xem đơn hàng</a></li>
+                    <li><a href="@Url.Action("Unship",   "Order")">Đơn hàng chưa giao</a></li>
                     <li><a href="@Url.Action("Shipping", "Order")">Đơn hàng đang giao</a></li>
                     <li><a href="@Url.Action("Overview", "Order")">Thống kê doanh thu</a></li>
                 </ul>
             </li>
 
-            <!-- Cài đặt hệ thống -->
+            @* Thanh toán *@
             <li>
                 <a href="#">
-                    <i class="fa fa-credit-card fa-fw"></i>
-                        <span class="nav-label">Thanh toán</span>
-                        <span class="fa arrow"></span>
-</a>
+                    <i class="fa fa-credit-card"></i>
+                    <span class="nav-label">Thanh toán</span>
+                    <span class="fa arrow"></span>
+                </a>
                 <ul class="nav nav-second-level">
                     <li><a href="@Url.Action("Payment", "Payment")">Các cổng thanh toán</a></li>
                     <li><a href="@Url.Action("History", "Payment")">Lịch sử thanh toán</a></li>
-                    <li><a href="@Url.Action("Report", "Payment")">Báo cáo tài chính</a></li>
+                    <li><a href="@Url.Action("Report",  "Payment")">Báo cáo tài chính</a></li>
                 </ul>
             </li>
 
+            <li>
+                <a href="#">
+                    <i class="fa fa-file-text-o"></i>
+                    <span class="nav-label">Hợp đồng</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li>
+                        <a href="@Url.Action("Index", "Contract", new { area = "Adm" })">
+                            Danh sách hợp đồng
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("ImportExcel", "Contract", new { area = "Adm" })">
+                            Import từ Excel
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("DownloadTemplate", "Contract", new { area = "Adm" })">
+                            Tải file mẫu
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Reminders", "Job", new { area = "Adm" })">
+                            Nhắc nộp tiền
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#">
+                    <i class="fa fa-clock-o"></i>
+                    <span class="nav-label">
+                        Background Jobs
+                        
+                    </span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <li>
+                        <a href="@Url.Action("Index", "Job", new { area = "Adm" })">
+                            <i class="fa fa-list" style="font-size:11px; margin-right:4px;"></i>
+                            Quản lý Jobs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Reminders", "Job", new { area = "Adm" })">
+                            <i class="fa fa-bell" style="font-size:11px; margin-right:4px;"></i>
+                            Danh sách Reminders
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/hangfire" target="_blank">
+                            <i class="fa fa-external-link" style="font-size:11px; margin-right:4px;"></i>
+                            Hangfire Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("Index", "Notification", new { area = "Adm" })">
+                                <i class="fa fa-envelope">
+                            </i>
+                            <span class="nav-label">Thông báo Email</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
 
         </ul>
     </div>

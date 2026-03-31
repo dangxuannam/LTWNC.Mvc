@@ -1,0 +1,213 @@
+﻿@{
+    ViewBag.Title = "Import Hợp Đồng từ Excel";
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fa fa-file-excel-o"></i> Import Hợp Đồng từ Excel</h2>
+        <hr />
+    </div>
+</div>
+
+@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+
+<div class="panel panel-info">
+    <div class="panel-heading"><b><i class="fa fa-download"></i> Bước 1: Tải file mẫu</b></div>
+    <div class="panel-body">
+        <a href="@Url.Action("DownloadTemplate", "Contract", new { area = "Adm" })"
+           class="btn btn-success">
+            <i class="fa fa-download"></i> Tải file Excel mẫu (.xlsx)
+        </a>
+        <small class="text-muted"> — Điền dữ liệu đúng format rồi upload lên bước 2</small>
+    </div>
+</div>
+
+<div class="panel panel-primary">
+    <div class="panel-heading"><b><i class="fa fa-upload"></i> Bước 2: Upload file Excel</b></div>
+    <div class="panel-body">
+        <form id="importForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label>Chọn file Excel (.xlsx, .xls)</label>
+                <input type="file" id="excelFile" name="excelFile"
+                       accept=".xlsx,.xls" class="form-control" required />
+                <small class="text-muted">Kích thước tối đa: 5MB</small>
+            </div>
+
+            <div id="uploadProgress" style="display:none" class="mb-2">
+                <div class="progress">
+                    <div id="progressBar"
+                         class="progress-bar progress-bar-striped active"
+                         role="progressbar" style="width:0%">
+                        Đang xử lý...
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="btnUpload" class="btn btn-primary">
+                <i class="fa fa-search"></i> Đọc và Xem trước
+            </button>
+            <a href="@Url.Action("Index", "Contract", new { area = "Adm" })"
+               class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+        </form>
+    </div>
+</div>
+
+<div id="previewContainer"></div>
+
+@section Scripts {
+    <script>
+$(function () {
+
+    $('#importForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var fileInput = $('#excelFile')[0];
+        if (!fileInput.files || fileInput.files.length === 0) {
+            showAlert('danger', 'Vui lòng chọn file Excel trước khi upload.');
+            return;
+        }
+
+        var file = fileInput.files[0];
+
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (ext !== 'xlsx' && ext !== 'xls') {
+            showAlert('danger', 'Chỉ chấp nhận file .xlsx hoặc .xls');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showAlert('danger', 'File vượt quá 5MB. Vui lòng chọn file nhỏ hơn.');
+            return;
+        }
+
+        var formData = new FormData(this);
+
+        $('#uploadProgress').show();
+        $('#btnUpload').prop('disabled', true)
+                       .html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+        $('#previewContainer').html('');
+
+        $.ajax({
+            url: '@Url.Action("ImportExcelAjax", "Contract", new { area = "Adm" })',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function (evt) {
+                    if (evt.lengthComputable) {
+                        var pct = Math.round((evt.loaded / evt.total) * 100);
+                        $('#progressBar').css('width', pct + '%')
+                                        .text(pct + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            success: function (response) {
+                resetUploadUI();
+                if (response.success) {
+                    renderPreview(response.data, response.validCount, response.errorCount);
+                } else {
+                    showAlert('danger', response.message);
+                }
+            },
+            error: function (xhr) {
+                resetUploadUI();
+                showAlert('danger', 'Lỗi kết nối server: ' + xhr.statusText);
+            }
+        });
+    });
+
+    $(document).on('click', '#btnConfirmImport', function () {
+        $(this).prop('disabled', true)
+               .html('<i class="fa fa-spinner fa-spin"></i> Đang import...');
+        $('#confirmForm').submit();
+    });
+
+    function resetUploadUI() {
+        $('#uploadProgress').hide();
+        $('#progressBar').css('width', '0%').text('Đang xử lý...');
+        $('#btnUpload').prop('disabled', false)
+                       .html('<i class="fa fa-search"></i> Đọc và Xem trước');
+    }
+
+    function showAlert(type, msg) {
+        $('#previewContainer').html(
+            '<div class="alert alert-' + type + '">' +
+            '<i class="fa fa-exclamation-circle"></i> ' + msg + '</div>'
+        );
+    }
+
+    function renderPreview(rows, validCount, errorCount) {
+        var html = '';
+
+        html += '<div class="row text-center mb-3">' +
+                '<div class="col-md-4"><div class="panel panel-default">' +
+                '<div class="panel-body"><h2>' + rows.length + '</h2><p>Tổng dòng</p></div></div></div>' +
+                '<div class="col-md-4"><div class="panel panel-success">' +
+                '<div class="panel-body"><h2 class="text-success">' + validCount + '</h2><p>Hợp lệ</p></div></div></div>' +
+                '<div class="col-md-4"><div class="panel panel-danger">' +
+                '<div class="panel-body"><h2 class="text-danger">' + errorCount + '</h2><p>Lỗi</p></div></div></div>' +
+                '</div>';
+
+        var errorRows = rows.filter(function(r){ return !r.isValid; });
+        if (errorRows.length > 0) {
+            html += '<div class="alert alert-danger"><strong><i class="fa fa-times-circle"></i> ' +
+                    errorRows.length + ' dòng lỗi</strong> — sẽ bị bỏ qua:<ul>';
+            errorRows.forEach(function(r){
+                html += '<li>Dòng ' + r.rowNumber + ': <code>' + r.errorMessage + '</code></li>';
+            });
+            html += '</ul></div>';
+        }
+
+        var validRows = rows.filter(function(r){ return r.isValid; });
+        if (validRows.length > 0) {
+            html += '<div class="alert alert-success"><strong><i class="fa fa-check-circle"></i> ' +
+                    validRows.length + ' dòng hợp lệ</strong> sẽ được import.</div>';
+
+            html += '<div class="table-responsive"><table class="table table-bordered table-hover table-striped">' +
+                    '<thead style="background:#1E3A8A;color:white"><tr>' +
+                    '<th>Dòng</th><th>Mã HĐ</th><th>Email KH</th>' +
+                    '<th>Ngày ký</th><th>Bắt đầu</th><th>Kết thúc</th>' +
+                    '<th class="text-right">Tổng tiền (đ)</th><th>Số kỳ</th>' +
+                    '</tr></thead><tbody>';
+
+            validRows.forEach(function(r){
+                html += '<tr>' +
+                        '<td class="text-center">' + r.rowNumber + '</td>' +
+                        '<td><strong>' + r.contractCode + '</strong></td>' +
+                        '<td>' + r.customerEmail + '</td>' +
+                        '<td>' + r.contractDate + '</td>' +
+                        '<td>' + r.startDate + '</td>' +
+                        '<td>' + r.endDate + '</td>' +
+                        '<td class="text-right">' + numberFormat(r.totalAmount) + '</td>' +
+                        '<td class="text-center">' + r.installmentCount + '</td>' +
+                        '</tr>';
+            });
+            html += '</tbody></table></div>';
+            html += '<form id="confirmForm" method="POST" action="@Url.Action("ConfirmImport", "Contract", new { area = "Adm" })">' +
+                    '@Html.AntiForgeryToken()' +
+                    '</form>' +
+                    '<button id="btnConfirmImport" class="btn btn-success btn-lg">' +
+                    '<i class="fa fa-check"></i> Xác nhận import ' + validRows.length + ' hợp đồng' +
+                    '</button> ' +
+                    '<a href="@Url.Action("ImportExcel", "Contract", new { area = "Adm" })" class="btn btn-default btn-lg">' +
+                    '<i class="fa fa-times"></i> Hủy</a>';
+        } else {
+            html += '<div class="alert alert-warning">Không có dòng hợp lệ nào để import.</div>';
+        }
+
+        $('#previewContainer').html(html);
+        $('html, body').animate({ scrollTop: $('#previewContainer').offset().top - 20 }, 400);
+    }
+
+    function numberFormat(n) {
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+});
+    </script>
+}

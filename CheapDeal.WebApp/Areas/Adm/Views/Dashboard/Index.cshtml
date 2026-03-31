@@ -11,14 +11,12 @@
         </div>
     </div>
 
-    <!-- Cards truy cập nhanh -->
+    <!-- Hàng 1: 4 cards cũ -->
     <div class="row">
         <div class="col-lg-3 col-md-6" style="margin-bottom: 20px;">
             <div class="dashboard-card navy-bg" onclick="location.href='@Url.Action("Index", "Product")'">
                 <div class="card-content">
-                    <div class="card-icon">
-                        <i class="fa fa-gift"></i>
-                    </div>
+                    <div class="card-icon"><i class="fa fa-gift"></i></div>
                     <div class="card-text">
                         <span>Sản phẩm</span>
                         <h2>Quản lý</h2>
@@ -26,13 +24,10 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-3 col-md-6" style="margin-bottom: 20px;">
             <div class="dashboard-card yellow-bg" onclick="location.href='@Url.Action("Index", "Order")'">
                 <div class="card-content">
-                    <div class="card-icon">
-                        <i class="fa fa-shopping-cart"></i>
-                    </div>
+                    <div class="card-icon"><i class="fa fa-shopping-cart"></i></div>
                     <div class="card-text">
                         <span>Đơn hàng</span>
                         <h2>Xử lý ngay</h2>
@@ -40,13 +35,10 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-3 col-md-6" style="margin-bottom: 20px;">
             <div class="dashboard-card lazur-bg" onclick="location.href='@Url.Action("Index", "Category")'">
                 <div class="card-content">
-                    <div class="card-icon">
-                        <i class="fa fa-sitemap"></i>
-                    </div>
+                    <div class="card-icon"><i class="fa fa-sitemap"></i></div>
                     <div class="card-text">
                         <span>Sản phẩm</span>
                         <h2>Phân loại</h2>
@@ -54,13 +46,10 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-3 col-md-6" style="margin-bottom: 20px;">
             <div class="dashboard-card red-bg" onclick="location.href='@Url.Action("Library", "Picture")'">
                 <div class="card-content">
-                    <div class="card-icon">
-                        <i class="fa fa-image"></i>
-                    </div>
+                    <div class="card-icon"><i class="fa fa-image"></i></div>
                     <div class="card-text">
                         <span>Thư viện ảnh</span>
                         <h2>Media</h2>
@@ -70,8 +59,34 @@
         </div>
     </div>
 
+    <!-- Hàng 2: Hợp đồng + Background Jobs (tuần 9-11) -->
+    <div class="row">
+        <div class="col-lg-6 col-md-6" style="margin-bottom: 20px;">
+            <div class="dashboard-card contract-bg" onclick="location.href='@Url.Action("Index", "Contract", new { area = "Adm" })'">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa fa-file-text-o"></i></div>
+                    <div class="card-text">
+                        <span>Hợp đồng</span>
+                        <h2>Quản lý</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6" style="margin-bottom: 20px;">
+            <div class="dashboard-card job-bg" onclick="location.href='@Url.Action("Index", "Job", new { area = "Adm" })'">
+                <div class="card-content">
+                    <div class="card-icon"><i class="fa fa-clock-o"></i></div>
+                    <div class="card-text">
+                        <span>Background Jobs</span>
+                        <h2>Hangfire</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Cards chức năng phụ -->
-    <div class="row" style="margin-top: 20px;">
+    <div class="row" style="margin-top: 10px;">
         <div class="col-lg-6 col-md-6" style="margin-bottom: 20px;">
             <div class="function-box" onclick="location.href='@Url.Action("TrackOrders", "Shipper")'">
                 <div class="box-content">
@@ -81,7 +96,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-6 col-md-6" style="margin-bottom: 20px;">
             <div class="function-box" onclick="location.href='@Url.Action("Index", "Supplier")'">
                 <div class="box-content">
@@ -93,8 +107,39 @@
         </div>
     </div>
 
+    <!-- Shortcuts tuần 11 -->
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-lg-4 col-md-6" style="margin-bottom: 20px;">
+            <div class="function-box" onclick="location.href='@Url.Action("ImportExcel", "Contract", new { area = "Adm" })'">
+                <div class="box-content">
+                    <i class="fa fa-file-excel-o" style="color: #1ab394; font-size: 36px; margin-bottom: 10px;"></i>
+                    <h3 style="margin-bottom: 5px; font-size: 16px;">Import Hợp đồng</h3>
+                    <p style="color: #676a6c; margin: 0; font-size: 13px;">Nhập từ file Excel</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6" style="margin-bottom: 20px;">
+            <div class="function-box" onclick="location.href='@Url.Action("Reminders", "Job", new { area = "Adm" })'">
+                <div class="box-content">
+                    <i class="fa fa-bell" style="color: #f8ac59; font-size: 36px; margin-bottom: 10px;"></i>
+                    <h3 style="margin-bottom: 5px; font-size: 16px;">Reminders</h3>
+                    <p style="color: #676a6c; margin: 0; font-size: 13px;">Nhắc nhở thanh toán</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6" style="margin-bottom: 20px;">
+            <div class="function-box" onclick="window.open('/hangfire', '_blank')">
+                <div class="box-content">
+                    <i class="fa fa-dashboard" style="color: #23c6c8; font-size: 36px; margin-bottom: 10px;"></i>
+                    <h3 style="margin-bottom: 5px; font-size: 16px;">Hangfire Dashboard</h3>
+                    <p style="color: #676a6c; margin: 0; font-size: 13px;">Theo dõi background jobs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quản lý người dùng -->
-    <div class="row" style="margin-top: 20px;">
+    <div class="row" style="margin-top: 10px;">
         <div class="col-lg-12" style="margin-bottom: 20px;">
             <div class="function-box user-management" onclick="location.href='@Url.Action("Index", "User")'">
                 <div class="box-content" style="display: flex; align-items: center;">
@@ -112,7 +157,6 @@
 </div>
 
 <style>
-    /* Dashboard Cards */
     .dashboard-card {
         padding: 20px;
         border-radius: 8px;
@@ -120,12 +164,12 @@
         min-height: 120px;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
         .dashboard-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             filter: brightness(1.1);
         }
 
@@ -162,7 +206,6 @@
             margin: 5px 0 0 0;
         }
 
-    /* Background colors */
     .navy-bg {
         background-color: #1ab394;
     }
@@ -179,7 +222,14 @@
         background-color: #ed5565;
     }
 
-    /* Function boxes */
+    .contract-bg {
+        background-color: #5b73e8;
+    }
+
+    .job-bg {
+        background-color: #6B7280;
+    }
+
     .function-box {
         cursor: pointer;
         transition: all 0.3s ease;
@@ -194,7 +244,7 @@
             background-color: #f8f9fa;
             border-color: #1ab394;
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .function-box i {
@@ -209,7 +259,6 @@
         text-align: center;
     }
 
-    /* Responsive */
     @@media (max-width: 768px) {
         .dashboard-card {
             margin-bottom: 15px;

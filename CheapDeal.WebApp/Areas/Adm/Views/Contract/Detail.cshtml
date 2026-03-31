@@ -1,0 +1,440 @@
+﻿@model CheapDeal.WebApp.Models.Contract
+
+@{
+    ViewBag.Title = "Chi tiết hợp đồng - " + Model.ContractCode;
+    Layout = "~/Areas/Adm/Views/Shared/_Layout.cshtml";
+    var paidPct = Model.TotalAmount > 0
+        ? (int)(Model.PaidAmount / Model.TotalAmount * 100) : 0;
+    var remainAmount = Model.TotalAmount - Model.PaidAmount;
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Chi tiết hợp đồng</h2>
+        <ol class="breadcrumb">
+            <li><a href="@Url.Action("Index", "Dashboard", new { area = "Adm" })">Trang chủ</a></li>
+            <li><a href="@Url.Action("Index", "Contract", new { area = "Adm" })">Hợp đồng</a></li>
+            <li class="active"><strong>@Model.ContractCode</strong></li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+        <div class="title-action">
+            <a href="@Url.Action("Index", "Contract", new { area = "Adm" })"
+               class="btn btn-white" style="margin-top:30px">
+                <i class="fa fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+
+        <div class="col-lg-8">
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-file-text-o"></i> Thông tin hợp đồng</h5>
+                    <div class="ibox-tools">
+                        @if (Model.Status != null)
+                        {
+                            <span class="label"
+                                  style="background:@(Model.Status.Color ?? "#6c757d");color:#fff;padding:5px 10px;font-size:12px">
+                                <i class="fa @(Model.Status.Icon ?? "fa-circle")"></i>
+                                @Model.Status.StatusName
+                            </span>
+                        }
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <dl class="dl-horizontal">
+                                <dt>Mã hợp đồng:</dt>
+                                <dd><strong>@Model.ContractCode</strong></dd>
+
+                                <dt>Khách hàng:</dt>
+                                <dd>
+                                    @if (Model.Customer != null)
+                                    {
+                                        <span>@Model.Customer.UserName</span><br />
+                                        <small class="text-muted">@Model.Customer.Email</small>
+                                    }
+                                </dd>
+
+                                <dt>Ngày ký:</dt>
+                                <dd>@Model.ContractDate.ToString("dd/MM/yyyy")</dd>
+
+                                <dt>Hiệu lực:</dt>
+                                <dd>
+                                    @Model.StartDate.ToString("dd/MM/yyyy")
+                                    <i class="fa fa-arrow-right text-muted"></i>
+                                    @Model.EndDate.ToString("dd/MM/yyyy")
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-sm-6">
+                            <dl class="dl-horizontal">
+                                <dt>Tổng giá trị:</dt>
+                                <dd><strong class="text-navy">@Model.TotalAmount.ToString("N0") đ</strong></dd>
+
+                                <dt>Đã thanh toán:</dt>
+                                <dd class="text-success">@Model.PaidAmount.ToString("N0") đ</dd>
+
+                                <dt>Còn lại:</dt>
+                                <dd class="@(remainAmount > 0 ? "text-danger" : "text-navy")">
+                                    <strong>@remainAmount.ToString("N0") đ</strong>
+                                </dd>
+
+                                <dt>Tiến độ:</dt>
+                                <dd>
+                                    <div class="progress" style="margin-bottom:0">
+                                        <div class="progress-bar @(paidPct >= 100 ? "progress-bar-success" : "progress-bar-warning")"
+                                             style="width:@(paidPct)%">
+                                            @paidPct%
+                                        </div>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Terms))
+                    {
+                        <div class="alert alert-info" style="margin-top:10px;margin-bottom:0">
+                            <strong><i class="fa fa-info-circle"></i> Điều khoản:</strong>
+                            @Model.Terms
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="alert alert-warning" style="margin-top:8px;margin-bottom:0">
+                            <strong><i class="fa fa-sticky-note-o"></i> Ghi chú:</strong>
+                            @Model.Notes
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-calendar"></i> Lịch thanh toán</h5>
+                </div>
+                <div class="ibox-content" style="padding:0">
+                    <table class="table table-hover" style="margin-bottom:0">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Kỳ</th>
+                                <th>Ngày đến hạn</th>
+                                <th class="text-right">Số tiền</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th>Ngày TT</th>
+                                <th class="text-right">Đã TT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Schedules != null && Model.Schedules.Any())
+                            {
+                                foreach (var s in Model.Schedules.OrderBy(x => x.InstallmentNo))
+                                {
+                                    var isOverdue = s.Status == "PENDING" && s.DueDate < DateTime.Today;
+                                    <tr class="@(isOverdue ? "danger" : s.Status == "PAID" ? "success" : "")">
+                                        <td class="text-center">
+                                            <span class="badge">@s.InstallmentNo</span>
+                                        </td>
+                                        <td>
+                                            @s.DueDate.ToString("dd/MM/yyyy")
+                                            @if (isOverdue)
+                                            {
+                                                <br /><small class="text-danger"><i class="fa fa-exclamation-circle"></i> Quá hạn</small>
+                                            }
+                                        </td>
+                                        <td class="text-right">@s.Amount.ToString("N0") đ</td>
+                                        <td class="text-center">
+                                            @switch (s.Status)
+                                            {
+                                                case "PAID":
+                                                    <span class="label label-success">Đã TT</span>
+                                                    break;
+                                                case "OVERDUE":
+                                                    <span class="label label-danger">Quá hạn</span>
+                                                    break;
+                                                default:
+                                                    <span class="label label-warning">Chờ TT</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @(s.PaidDate.HasValue ? s.PaidDate.Value.ToString("dd/MM/yyyy") : "—")
+                                        </td>
+                                        <td class="text-right">
+                                            @(s.PaidAmount.HasValue ? s.PaidAmount.Value.ToString("N0") + " đ" : "—")
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted" style="padding:20px">
+                                        Chưa có lịch thanh toán
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-exchange"></i> Cập nhật trạng thái</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="form-group">
+                        <label>Trạng thái mới</label>
+                        <select id="newStatusId" class="form-control">
+                            @if (ViewBag.StatusList != null)
+                            {
+                                foreach (var s in ViewBag.StatusList)
+                                {
+                                    <option value="@s.StatusId"
+                                            @(Model.StatusId == s.StatusId ? "selected" : "")>
+                                        @s.StatusName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="statusNotes" class="form-control" rows="2"
+                                  placeholder="Lý do thay đổi..."></textarea>
+                    </div>
+                    <button id="btnUpdateStatus" class="btn btn-primary btn-block">
+                        <i class="fa fa-save"></i> Lưu trạng thái
+                    </button>
+                    @Html.AntiForgeryToken()
+                </div>
+            </div>
+
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-file-pdf-o text-danger"></i> File hợp đồng (PDF)</h5>
+                </div>
+                <div class="ibox-content">
+                    <form id="uploadPdfForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="contractId" value="@Model.ContractId" />
+                        <div class="form-group">
+                            <input type="file" id="pdfFile" name="pdfFile"
+                                   accept=".pdf" class="form-control" />
+                            <small class="text-muted">Chỉ nhận .pdf, tối đa 10MB</small>
+                        </div>
+                        <div id="uploadProgress" style="display:none" class="progress">
+                            <div id="uploadBar" class="progress-bar progress-bar-striped active"
+                                 style="width:0%">Đang upload...</div>
+                        </div>
+                        <button type="submit" id="btnUploadPdf" class="btn btn-danger btn-block">
+                            <i class="fa fa-upload"></i> Upload PDF
+                        </button>
+                    </form>
+
+                    <div id="fileList" style="margin-top:12px">
+                        @if (ViewBag.Files != null)
+                        {
+                            foreach (var f in ViewBag.Files)
+                            {
+                                <div class="file-item" id="file-@f.FileId"
+                                     style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee">
+                                    <span>
+                                        <i class="fa fa-file-pdf-o text-danger"></i>
+                                        <a href="@Url.Content(f.StoredPath)" target="_blank"
+                                           style="font-size:12px">@f.OriginalFileName</a>
+                                        <br />
+                                        <small class="text-muted">
+                                            @(f.FileSizeBytes / 1024) KB &bull;
+                                            @f.UploadedDate.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </span>
+                                    <button class="btn btn-xs btn-danger btn-delete-file"
+                                            data-id="@f.FileId" title="Xóa">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5><i class="fa fa-info-circle"></i> Thông tin hệ thống</h5>
+                </div>
+                <div class="ibox-content">
+                    <dl class="dl-horizontal" style="margin-bottom:0">
+                        <dt>Tạo bởi:</dt>
+                        <dd><small>@(Model.CreatedBy ?? "—")</small></dd>
+                        <dt>Ngày tạo:</dt>
+                        <dd><small>@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small></dd>
+                        @if (Model.UpdatedDate.HasValue)
+                        {
+                            <dt>Cập nhật:</dt>
+                            <dd><small>@Model.UpdatedDate.Value.ToString("dd/MM/yyyy HH:mm")</small></dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+
+    <script>
+$(document).ready(function () {
+
+    var contractId = @Model.ContractId;
+    var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+    // ── Hàm thông báo an toàn (dùng toastr nếu có, fallback alert) ──
+    function notify(type, msg) {
+        if (typeof toastr !== 'undefined') {
+            toastr[type](msg);
+        } else {
+            alert(msg);
+        }
+    }
+
+    // ── Toastr server-side messages ─────────────────────────────────
+    @if (TempData["SuccessMessage"] != null) { <text>notify('success', '@TempData["SuccessMessage"]');</text> }
+    @if (TempData["ErrorMessage"]   != null) { <text>notify('error',   '@TempData["ErrorMessage"]');</text>   }
+
+    // ── Cập nhật trạng thái (AJAX) ───────────────────────────────────
+    $('#btnUpdateStatus').on('click', function () {
+        var btn = $(this);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang lưu...');
+
+        $.ajax({
+            url: '@Url.Action("UpdateStatus", "Contract", new { area = "Adm" })',
+            type: 'POST',
+            data: {
+                contractId:                 contractId,
+                newStatusId:                $('#newStatusId').val(),
+                notes:                      $('#statusNotes').val(),
+                __RequestVerificationToken: token
+            },
+            success: function (res) {
+                if (res.success) {
+                    notify('success', res.message);
+                    // Cập nhật badge trạng thái không cần reload
+                    $('.ibox-tools .label')
+                        .css('background', res.newStatusColor || '#6c757d')
+                        .html('<i class="fa fa-circle"></i> ' + res.newStatusName);
+                    $('#statusNotes').val('');
+                } else {
+                    notify('error', res.message);
+                }
+            },
+            error: function (xhr) {
+                notify('error', 'Lỗi kết nối server: ' + xhr.status);
+            },
+            complete: function () {
+                // Luôn reset button dù thành công hay lỗi
+                btn.prop('disabled', false)
+                   .html('<i class="fa fa-save"></i> Lưu trạng thái');
+            }
+        });
+    });
+
+    // ── Upload PDF (AJAX) ────────────────────────────────────────────
+    $('#uploadPdfForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var file = $('#pdfFile')[0].files[0];
+        if (!file) { notify('warning', 'Vui lòng chọn file PDF'); return; }
+
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (ext !== 'pdf') { notify('error', 'Chỉ nhận file .pdf'); return; }
+        if (file.size > 10 * 1024 * 1024) { notify('error', 'File vượt quá 10MB'); return; }
+
+        var formData = new FormData(this);
+        $('#uploadProgress').show();
+        $('#btnUploadPdf').prop('disabled', true)
+                         .html('<i class="fa fa-spinner fa-spin"></i> Đang upload...');
+
+        $.ajax({
+            url: '@Url.Action("UploadPdf", "Contract", new { area = "Adm" })',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+                var xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function (evt) {
+                    if (evt.lengthComputable) {
+                        var pct = Math.round(evt.loaded / evt.total * 100);
+                        $('#uploadBar').css('width', pct + '%').text(pct + '%');
+                    }
+                });
+                return xhr;
+            },
+            success: function (res) {
+                if (res.success) {
+                    notify('success', res.message);
+                    var html = '<div class="file-item" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee">' +
+                        '<span><i class="fa fa-file-pdf-o text-danger"></i> ' +
+                        '<a href="' + res.storedPath + '" target="_blank" style="font-size:12px">' + res.fileName + '</a>' +
+                        '<br/><small class="text-muted">' + res.fileSizeKb + ' KB &bull; ' + res.uploadedDate + '</small></span>' +
+                        '</div>';
+                    $('#fileList').prepend(html);
+                    $('#pdfFile').val('');
+                } else {
+                    notify('error', res.message);
+                }
+            },
+            error: function () { notify('error', 'Lỗi kết nối server'); },
+            complete: function () {
+                $('#uploadProgress').hide();
+                $('#uploadBar').css('width', '0%');
+                $('#btnUploadPdf').prop('disabled', false)
+                                 .html('<i class="fa fa-upload"></i> Upload PDF');
+            }
+        });
+    });
+
+    // ── Xóa file PDF (AJAX) ──────────────────────────────────────────
+    $(document).on('click', '.btn-delete-file', function () {
+        var btn    = $(this);
+        var fileId = btn.data('id');
+        if (!confirm('Xóa file này?')) return;
+
+        $.ajax({
+            url: '@Url.Action("DeleteFile", "Contract", new { area = "Adm" })',
+            type: 'POST',
+            data: { fileId: fileId, contractId: contractId, __RequestVerificationToken: token },
+            success: function (res) {
+                if (res.success) {
+                    btn.closest('.file-item').fadeOut(300, function () { $(this).remove(); });
+                    notify('success', res.message);
+                } else {
+                    notify('error', res.message);
+                }
+            },
+            error: function () { notify('error', 'Lỗi kết nối server'); }
+        });
+    });
+
+});
+    </script>
+}
+

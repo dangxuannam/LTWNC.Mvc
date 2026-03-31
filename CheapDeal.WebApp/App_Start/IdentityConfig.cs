@@ -15,58 +15,133 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using CheapDeal.WebApp.Models;
 using CheapDeal.WebApp.DAL;
+using CheapDeal.WebApp.Helpers;
 
 namespace CheapDeal.WebApp
 {
     public class EmailService : IIdentityMessageService
     {
+        internal static void SendPendingReminders()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static bool SendTestEmail(string testEmail, out string error)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task SendAsync(IdentityMessage message)
         {
+            LogHelper.LogEmail("========== EMAIL SERVICE CALLED ==========");
             try
             {
+                LogHelper.LogEmail("[EMAIL] Step 1: Reading SMTP configuration from Web.config");
+                
                 // Lấy cấu hình SMTP từ Web.config
-                var smtpHost = ConfigurationManager.AppSettings["SMTP:Host"] ?? "smtp.gmail.com";
-                var smtpPort = int.Parse(ConfigurationManager.AppSettings["SMTP:Port"] ?? "587");
-                var smtpUsername = ConfigurationManager.AppSettings["SMTP:Username"];
-                var smtpPassword = ConfigurationManager.AppSettings["SMTP:Password"];
-                var smtpFromEmail = ConfigurationManager.AppSettings["SMTP:FromEmail"] ?? smtpUsername;
-                var smtpFromName = ConfigurationManager.AppSettings["SMTP:FromName"] ?? "WebTaiSan";
-                var smtpEnableSSL = bool.Parse(ConfigurationManager.AppSettings["SMTP:EnableSSL"] ?? "true");
+                var smtpHost = ConfigurationManager.AppSettings["Smtp.Host"] ?? "smtp.gmail.com";
+                var smtpPortStr = ConfigurationManager.AppSettings["Smtp.Port"] ?? "587";
+                var smtpUsername = ConfigurationManager.AppSettings["Smtp.User"];
+                var smtpPassword = ConfigurationManager.AppSettings["Smtp.Password"];
+                var smtpFromEmail = ConfigurationManager.AppSettings["Smtp.From"] ?? smtpUsername;
+                var smtpFromName = ConfigurationManager.AppSettings["Smtp.FromName"] ?? "CheapDeal System";
+                var smtpEnableSslStr = ConfigurationManager.AppSettings["Smtp.EnableSSL"] ?? "true";
+
+                LogHelper.LogEmail($"[EMAIL] Config loaded - Host: {smtpHost}, Port: {smtpPortStr}");
+                
+                int smtpPort;
+                if (!int.TryParse(smtpPortStr, out smtpPort))
+                {
+                    LogHelper.LogEmail($"[EMAIL] ERROR: Invalid SMTP Port value: {smtpPortStr}");
+                    return;
+                }
+
+                bool smtpEnableSSL;
+                if (!bool.TryParse(smtpEnableSslStr, out smtpEnableSSL))
+                {
+                    smtpEnableSSL = true;
+                }
+
+                LogHelper.LogEmail($"[EMAIL] Step 2: Validating SMTP configuration");
+                LogHelper.LogEmail($"[EMAIL] - Host: {smtpHost}");
+                LogHelper.LogEmail($"[EMAIL] - Port: {smtpPort}");
+                LogHelper.LogEmail($"[EMAIL] - Username: {(string.IsNullOrEmpty(smtpUsername) ? "EMPTY" : "***")}");
+                LogHelper.LogEmail($"[EMAIL] - Password: {(string.IsNullOrEmpty(smtpPassword) ? "EMPTY" : "***")}");
+                LogHelper.LogEmail($"[EMAIL] - From Email: {smtpFromEmail}");
+                LogHelper.LogEmail($"[EMAIL] - SSL Enabled: {smtpEnableSSL}");
 
                 // Kiểm tra cấu hình
                 if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
                 {
-                    System.Diagnostics.Debug.WriteLine("SMTP not configured. Email not sent.");
+                    LogHelper.LogEmail("[EMAIL] ✗ BLOCKED: SMTP Username or Password is EMPTY in Web.config");
                     return;
                 }
 
-                // Tạo email message
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(smtpFromEmail, smtpFromName),
-                    Subject = message.Subject,
-                    Body = message.Body,
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(message.Destination);
+                LogHelper.LogEmail($"[EMAIL] Step 3: Validating email message");
+                LogHelper.LogEmail($"[EMAIL] - Destination: {message.Destination}");
+                LogHelper.LogEmail($"[EMAIL] - Subject: {message.Subject}");
 
-                // Cấu hình SMTP client
-                using (var smtpClient = new SmtpClient(smtpHost, smtpPort))
+                if (string.IsNullOrEmpty(message.Destination))
                 {
-                    smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-                    smtpClient.EnableSsl = smtpEnableSSL;
-                    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    smtpClient.UseDefaultCredentials = false;
-
-                    // Gửi email
-                    await smtpClient.SendMailAsync(mailMessage);
-                    System.Diagnostics.Debug.WriteLine($"Email sent to {message.Destination}");
+                    LogHelper.LogEmail("[EMAIL] ✗ BLOCKED: Email destination is EMPTY");
+                    return;
                 }
+
+                LogHelper.LogEmail($"[EMAIL] Step 4: Creating mail message");
+                
+                // Tạo email message
+                using (var mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress(smtpFromEmail, smtpFromName);
+                    mailMessage.To.Add(message.Destination);
+                    mailMessage.Subject = message.Subject;
+                    mailMessage.Body = message.Body;
+                    mailMessage.IsBodyHtml = true;
+
+                LogHelper.LogEmail($"[EMAIL] Step 5: Connecting to SMTP server {smtpHost}:{smtpPort}");
+                    
+                    // Cấu hình SMTP client với timeout
+                    using (var smtpClient = new SmtpClient(smtpHost, smtpPort))
+                    {
+                        // QUAN TRỌNG: Phải set EnableSsl TRƯỚC khi set Credentials cho Gmail
+                        smtpClient.EnableSsl = smtpEnableSSL;
+                        smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                        smtpClient.UseDefaultCredentials = false;
+                        smtpClient.Timeout = 30000; // 30 seconds timeout
+                        
+                        // Sau đó mới set credentials
+                        smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+
+                        LogHelper.LogEmail($"[EMAIL] Step 6: Sending email...");
+                        
+                        // Gửi email
+                        await smtpClient.SendMailAsync(mailMessage);
+                        LogHelper.LogEmail($"[EMAIL] ✓ SUCCESS: Email sent to {message.Destination}");
+                    }
+                }
+            }
+            catch (System.Net.Mail.SmtpFailedRecipientException failedEx)
+            {
+                LogHelper.LogEmail($"[EMAIL] ✗ FAILED RECIPIENT: {failedEx.FailedRecipient}");
+                LogHelper.LogEmail($"[EMAIL] Message: {failedEx.Message}");
+                LogHelper.LogEmail($"[EMAIL] Stack: {failedEx.StackTrace}");
+            }
+            catch (SmtpException smtpEx)
+            {
+                LogHelper.LogEmail($"[EMAIL] ✗ SMTP ERROR Code: {smtpEx.StatusCode}");
+                LogHelper.LogEmail($"[EMAIL] Message: {smtpEx.Message}");
+                LogHelper.LogEmail($"[EMAIL] Inner Exception: {smtpEx.InnerException?.Message}");
+                LogHelper.LogEmail($"[EMAIL] Stack: {smtpEx.StackTrace}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to send email: {ex.Message}");
-                // Log error nhưng không throw exception để không ảnh hưởng flow
+                LogHelper.LogEmail($"[EMAIL] ✗ UNEXPECTED ERROR: {ex.GetType().Name}");
+                LogHelper.LogEmail($"[EMAIL] Message: {ex.Message}");
+                LogHelper.LogEmail($"[EMAIL] Stack Trace: {ex.StackTrace}");
+            }
+            finally
+            {
+                LogHelper.LogEmail("========== EMAIL SERVICE FINISHED ==========");
             }
         }
     }
@@ -80,7 +155,6 @@ namespace CheapDeal.WebApp
         }
     }
 
-    // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class ApplicationUserManager : UserManager<Account>
     {
         public ApplicationUserManager(IUserStore<Account> store)
@@ -92,7 +166,7 @@ namespace CheapDeal.WebApp
         {
             var manager = new ApplicationUserManager(new UserStore<Account>(context.Get<ShopDbContext>()));
 
-            // Configure validation logic for usernames
+         
             manager.UserValidator = new UserValidator<Account>(manager)
             {
                 AllowOnlyAlphanumericUserNames = false,
@@ -103,10 +177,10 @@ namespace CheapDeal.WebApp
             manager.PasswordValidator = new PasswordValidator
             {
                 RequiredLength = 6,
-                RequireNonLetterOrDigit = false,  // Cho phép không cần ký tự đặc biệt
-                RequireDigit = false,              // Cho phép không cần số
-                RequireLowercase = false,          // Cho phép không cần chữ thường
-                RequireUppercase = false,          // Cho phép không cần chữ hoa
+                RequireNonLetterOrDigit = false,  
+                RequireDigit = false,              
+                RequireLowercase = false,          
+                RequireUppercase = false,          
             };
 
             // Configure user lockout defaults

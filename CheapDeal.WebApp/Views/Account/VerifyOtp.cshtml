@@ -1,0 +1,230 @@
+﻿@model CheapDeal.WebApp.Models.VerifyOtpViewModel
+@{
+    ViewBag.Title = "Xác nhận mã OTP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .otp-wrapper {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    }
+
+    .otp-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .otp-header {
+        background: #17a2b8;
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .otp-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
+    }
+
+    .otp-header h1 {
+        font-size: 26px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+    }
+
+    .otp-header p {
+        font-size: 14px;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .otp-body {
+        padding: 35px 30px;
+    }
+
+    .info-box {
+        background: #e7f7fa;
+        border-left: 4px solid #17a2b8;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 13px;
+        color: #0c5460;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+    .otp-input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #dce4ec;
+        border-radius: 8px;
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        box-sizing: border-box;
+    }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #17a2b8;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.15);
+        }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 13px;
+        background: #17a2b8;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+    }
+
+        .btn-submit:hover {
+            background: #138496;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+
+    .timer-box {
+        text-align: center;
+        margin-top: 16px;
+        color: #7f8c8d;
+        font-size: 13px;
+    }
+
+    #countdown {
+        font-weight: bold;
+        color: #e74c3c;
+    }
+
+    .links {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+        .links a {
+            color: #17a2b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+            .links a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="otp-wrapper">
+    <div class="otp-container">
+        <div class="otp-header">
+            <div class="otp-icon">📩</div>
+            <h1>Nhập mã OTP</h1>
+            <p>Kiểm tra hộp thư email của bạn</p>
+        </div>
+
+        <div class="otp-body">
+            <div class="info-box">
+                📧 Chúng tôi đã gửi mã OTP 6 chữ số đến email
+                <strong>@(Model.Email ?? "của bạn")</strong>.
+                Mã có hiệu lực trong <strong>10 phút</strong>.
+            </div>
+
+            @using (Html.BeginForm("VerifyOtp", "Account", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.Email)
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    <label>Mã OTP <span style="color:#e74c3c">*</span></label>
+                    @Html.TextBoxFor(m => m.Otp, new
+                    {
+                        @class = "otp-input",
+                        placeholder = "• • • • • •",
+                        maxlength = "6",
+                        autocomplete = "one-time-code",
+                        inputmode = "numeric"
+                    })
+                    @Html.ValidationMessageFor(m => m.Otp, "", new { @class = "text-danger" })
+                </div>
+
+                <button type="submit" class="btn-submit">✅ Xác nhận OTP</button>
+            }
+
+            <div class="timer-box">
+                Mã hết hạn sau: <span id="countdown">10:00</span>
+            </div>
+
+            <div class="links">
+                <a href="@Url.Action("ForgotPassword", "Account")">↩ Gửi lại mã OTP</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Đếm ngược 10 phút
+    var seconds = 600;
+    var timer = setInterval(function () {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            document.getElementById('countdown').textContent = 'Hết hạn';
+            document.getElementById('countdown').style.color = '#e74c3c';
+            return;
+        }
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        document.getElementById('countdown').textContent =
+            (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }, 1000);
+
+    // Chỉ cho nhập số
+    document.querySelector('.otp-input').addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+</script>
